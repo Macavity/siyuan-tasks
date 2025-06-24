@@ -10,48 +10,48 @@
 import { fetchPost, fetchSyncPost, IWebSocketData } from "siyuan";
 
 export async function request(url: string, data: any) {
-  let response: IWebSocketData = await fetchSyncPost(url, data);
-  let res = response.code === 0 ? response.data : null;
+  const response: IWebSocketData = await fetchSyncPost(url, data);
+  const res = response.code === 0 ? response.data : null;
   return res;
 }
 
 // **************************************** Noteboook ****************************************
 
 export async function lsNotebooks(): Promise<IReslsNotebooks> {
-  let url = "/api/notebook/lsNotebooks";
+  const url = "/api/notebook/lsNotebooks";
   return request(url, "");
 }
 
 export async function openNotebook(notebook: NotebookId) {
-  let url = "/api/notebook/openNotebook";
+  const url = "/api/notebook/openNotebook";
   return request(url, { notebook: notebook });
 }
 
 export async function closeNotebook(notebook: NotebookId) {
-  let url = "/api/notebook/closeNotebook";
+  const url = "/api/notebook/closeNotebook";
   return request(url, { notebook: notebook });
 }
 
 export async function renameNotebook(notebook: NotebookId, name: string) {
-  let url = "/api/notebook/renameNotebook";
+  const url = "/api/notebook/renameNotebook";
   return request(url, { notebook: notebook, name: name });
 }
 
 export async function createNotebook(name: string): Promise<Notebook> {
-  let url = "/api/notebook/createNotebook";
+  const url = "/api/notebook/createNotebook";
   return request(url, { name: name });
 }
 
 export async function removeNotebook(notebook: NotebookId) {
-  let url = "/api/notebook/removeNotebook";
+  const url = "/api/notebook/removeNotebook";
   return request(url, { notebook: notebook });
 }
 
 export async function getNotebookConf(
   notebook: NotebookId
 ): Promise<IResGetNotebookConf> {
-  let data = { notebook: notebook };
-  let url = "/api/notebook/getNotebookConf";
+  const data = { notebook: notebook };
+  const url = "/api/notebook/getNotebookConf";
   return request(url, data);
 }
 
@@ -59,8 +59,8 @@ export async function setNotebookConf(
   notebook: NotebookId,
   conf: NotebookConf
 ): Promise<NotebookConf> {
-  let data = { notebook: notebook, conf: conf };
-  let url = "/api/notebook/setNotebookConf";
+  const data = { notebook: notebook, conf: conf };
+  const url = "/api/notebook/setNotebookConf";
   return request(url, data);
 }
 
@@ -70,12 +70,12 @@ export async function createDocWithMd(
   path: string,
   markdown: string
 ): Promise<DocumentId> {
-  let data = {
+  const data = {
     notebook: notebook,
     path: path,
     markdown: markdown,
   };
-  let url = "/api/filetree/createDocWithMd";
+  const url = "/api/filetree/createDocWithMd";
   return request(url, data);
 }
 
@@ -84,21 +84,21 @@ export async function renameDoc(
   path: string,
   title: string
 ): Promise<DocumentId> {
-  let data = {
+  const data = {
     doc: notebook,
     path: path,
     title: title,
   };
-  let url = "/api/filetree/renameDoc";
+  const url = "/api/filetree/renameDoc";
   return request(url, data);
 }
 
 export async function removeDoc(notebook: NotebookId, path: string) {
-  let data = {
+  const data = {
     notebook: notebook,
     path: path,
   };
-  let url = "/api/filetree/removeDoc";
+  const url = "/api/filetree/removeDoc";
   return request(url, data);
 }
 
@@ -107,12 +107,12 @@ export async function moveDocs(
   toNotebook: NotebookId,
   toPath: string
 ) {
-  let data = {
+  const data = {
     fromPaths: fromPaths,
     toNotebook: toNotebook,
     toPath: toPath,
   };
-  let url = "/api/filetree/moveDocs";
+  const url = "/api/filetree/moveDocs";
   return request(url, data);
 }
 
@@ -120,19 +120,19 @@ export async function getHPathByPath(
   notebook: NotebookId,
   path: string
 ): Promise<string> {
-  let data = {
+  const data = {
     notebook: notebook,
     path: path,
   };
-  let url = "/api/filetree/getHPathByPath";
+  const url = "/api/filetree/getHPathByPath";
   return request(url, data);
 }
 
 export async function getHPathByID(id: BlockId): Promise<string> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/filetree/getHPathByID";
+  const url = "/api/filetree/getHPathByID";
   return request(url, data);
 }
 
@@ -140,11 +140,11 @@ export async function getIDsByHPath(
   notebook: NotebookId,
   path: string
 ): Promise<BlockId[]> {
-  let data = {
+  const data = {
     notebook: notebook,
     path: path,
   };
-  let url = "/api/filetree/getIDsByHPath";
+  const url = "/api/filetree/getIDsByHPath";
   return request(url, data);
 }
 
@@ -154,12 +154,12 @@ export async function upload(
   assetsDirPath: string,
   files: any[]
 ): Promise<IResUpload> {
-  let form = new FormData();
+  const form = new FormData();
   form.append("assetsDirPath", assetsDirPath);
-  for (let file of files) {
+  for (const file of files) {
     form.append("file[]", file);
   }
-  let url = "/api/asset/upload";
+  const url = "/api/asset/upload";
   return request(url, form);
 }
 
@@ -172,14 +172,14 @@ export async function insertBlock(
   previousID?: BlockId,
   parentID?: BlockId
 ): Promise<IResdoOperations[]> {
-  let payload = {
+  const payload = {
     dataType: dataType,
     data: data,
     nextID: nextID,
     previousID: previousID,
     parentID: parentID,
   };
-  let url = "/api/block/insertBlock";
+  const url = "/api/block/insertBlock";
   return request(url, payload);
 }
 
@@ -188,12 +188,12 @@ export async function prependBlock(
   data: string,
   parentID: BlockId | DocumentId
 ): Promise<IResdoOperations[]> {
-  let payload = {
+  const payload = {
     dataType: dataType,
     data: data,
     parentID: parentID,
   };
-  let url = "/api/block/prependBlock";
+  const url = "/api/block/prependBlock";
   return request(url, payload);
 }
 
@@ -202,12 +202,12 @@ export async function appendBlock(
   data: string,
   parentID: BlockId | DocumentId
 ): Promise<IResdoOperations[]> {
-  let payload = {
+  const payload = {
     dataType: dataType,
     data: data,
     parentID: parentID,
   };
-  let url = "/api/block/appendBlock";
+  const url = "/api/block/appendBlock";
   return request(url, payload);
 }
 
@@ -216,20 +216,20 @@ export async function updateBlock(
   data: string,
   id: BlockId
 ): Promise<IResdoOperations[]> {
-  let payload = {
+  const payload = {
     dataType: dataType,
     data: data,
     id: id,
   };
-  let url = "/api/block/updateBlock";
+  const url = "/api/block/updateBlock";
   return request(url, payload);
 }
 
 export async function deleteBlock(id: BlockId): Promise<IResdoOperations[]> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/block/deleteBlock";
+  const url = "/api/block/deleteBlock";
   return request(url, data);
 }
 
@@ -238,48 +238,48 @@ export async function moveBlock(
   previousID?: PreviousID,
   parentID?: ParentID
 ): Promise<IResdoOperations[]> {
-  let data = {
+  const data = {
     id: id,
     previousID: previousID,
     parentID: parentID,
   };
-  let url = "/api/block/moveBlock";
+  const url = "/api/block/moveBlock";
   return request(url, data);
 }
 
 export async function foldBlock(id: BlockId) {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/block/foldBlock";
+  const url = "/api/block/foldBlock";
   return request(url, data);
 }
 
 export async function unfoldBlock(id: BlockId) {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/block/unfoldBlock";
+  const url = "/api/block/unfoldBlock";
   return request(url, data);
 }
 
 export async function getBlockKramdown(
   id: BlockId
 ): Promise<IResGetBlockKramdown> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/block/getBlockKramdown";
+  const url = "/api/block/getBlockKramdown";
   return request(url, data);
 }
 
 export async function getChildBlocks(
   id: BlockId
 ): Promise<IResGetChildBlock[]> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/block/getChildBlocks";
+  const url = "/api/block/getChildBlocks";
   return request(url, data);
 }
 
@@ -288,12 +288,12 @@ export async function transferBlockRef(
   toID: BlockId,
   refIDs: BlockId[]
 ) {
-  let data = {
+  const data = {
     fromID: fromID,
     toID: toID,
     refIDs: refIDs,
   };
-  let url = "/api/block/transferBlockRef";
+  const url = "/api/block/transferBlockRef";
   return request(url, data);
 }
 
@@ -302,37 +302,37 @@ export async function setBlockAttrs(
   id: BlockId,
   attrs: { [key: string]: string }
 ) {
-  let data = {
+  const data = {
     id: id,
     attrs: attrs,
   };
-  let url = "/api/attr/setBlockAttrs";
+  const url = "/api/attr/setBlockAttrs";
   return request(url, data);
 }
 
 export async function getBlockAttrs(
   id: BlockId
 ): Promise<{ [key: string]: string }> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/attr/getBlockAttrs";
+  const url = "/api/attr/getBlockAttrs";
   return request(url, data);
 }
 
 // **************************************** SQL ****************************************
 
 export async function sql(sql: string): Promise<any[]> {
-  let sqldata = {
+  const sqldata = {
     stmt: sql,
   };
-  let url = "/api/query/sql";
+  const url = "/api/query/sql";
   return request(url, sqldata);
 }
 
 export async function getBlockByID(blockId: string): Promise<Block> {
-  let sqlScript = `select * from blocks where id ='${blockId}'`;
-  let data = await sql(sqlScript);
+  const sqlScript = `select * from blocks where id ='${blockId}'`;
+  const data = await sql(sqlScript);
   return data[0];
 }
 
@@ -342,26 +342,26 @@ export async function render(
   id: DocumentId,
   path: string
 ): Promise<IResGetTemplates> {
-  let data = {
+  const data = {
     id: id,
     path: path,
   };
-  let url = "/api/template/render";
+  const url = "/api/template/render";
   return request(url, data);
 }
 
 export async function renderSprig(template: string): Promise<string> {
-  let url = "/api/template/renderSprig";
+  const url = "/api/template/renderSprig";
   return request(url, { template: template });
 }
 
 // **************************************** File ****************************************
 
 export async function getFile(path: string): Promise<any> {
-  let data = {
+  const data = {
     path: path,
   };
-  let url = "/api/file/getFile";
+  const url = "/api/file/getFile";
   return new Promise((resolve, _) => {
     fetchPost(url, data, (content: any) => {
       resolve(content);
@@ -376,7 +376,7 @@ export async function getFile(path: string): Promise<any> {
  */
 export const getFileBlob = async (path: string): Promise<Blob | null> => {
   const endpoint = "/api/file/getFile";
-  let response = await fetch(endpoint, {
+  const response = await fetch(endpoint, {
     method: "POST",
     body: JSON.stringify({
       path: path,
@@ -385,35 +385,35 @@ export const getFileBlob = async (path: string): Promise<Blob | null> => {
   if (!response.ok) {
     return null;
   }
-  let data = await response.blob();
+  const data = await response.blob();
   return data;
 };
 
 export async function putFile(path: string, isDir: boolean, file: any) {
-  let form = new FormData();
+  const form = new FormData();
   form.append("path", path);
   form.append("isDir", isDir.toString());
   // Copyright (c) 2023, terwer.
   // https://github.com/terwer/siyuan-plugin-importer/blob/v1.4.1/src/api/kernel-api.ts
   form.append("modTime", Math.floor(Date.now() / 1000).toString());
   form.append("file", file);
-  let url = "/api/file/putFile";
+  const url = "/api/file/putFile";
   return request(url, form);
 }
 
 export async function removeFile(path: string) {
-  let data = {
+  const data = {
     path: path,
   };
-  let url = "/api/file/removeFile";
+  const url = "/api/file/removeFile";
   return request(url, data);
 }
 
 export async function readDir(path: string): Promise<IResReadDir> {
-  let data = {
+  const data = {
     path: path,
   };
-  let url = "/api/file/readDir";
+  const url = "/api/file/readDir";
   return request(url, data);
 }
 
@@ -422,10 +422,10 @@ export async function readDir(path: string): Promise<IResReadDir> {
 export async function exportMdContent(
   id: DocumentId
 ): Promise<IResExportMdContent> {
-  let data = {
+  const data = {
     id: id,
   };
-  let url = "/api/export/exportMdContent";
+  const url = "/api/export/exportMdContent";
   return request(url, data);
 }
 
@@ -433,11 +433,11 @@ export async function exportResources(
   paths: string[],
   name: string
 ): Promise<IResExportResources> {
-  let data = {
+  const data = {
     paths: paths,
     name: name,
   };
-  let url = "/api/export/exportResources";
+  const url = "/api/export/exportResources";
   return request(url, data);
 }
 
@@ -445,10 +445,10 @@ export async function exportResources(
 
 export type PandocArgs = string;
 export async function pandoc(args: PandocArgs[]) {
-  let data = {
+  const data = {
     args: args,
   };
-  let url = "/api/convert/pandoc";
+  const url = "/api/convert/pandoc";
   return request(url, data);
 }
 
@@ -460,20 +460,20 @@ export async function pandoc(args: PandocArgs[]) {
 //     "timeout": 7000
 //   }
 export async function pushMsg(msg: string, timeout: number = 7000) {
-  let payload = {
+  const payload = {
     msg: msg,
     timeout: timeout,
   };
-  let url = "/api/notification/pushMsg";
+  const url = "/api/notification/pushMsg";
   return request(url, payload);
 }
 
 export async function pushErrMsg(msg: string, timeout: number = 7000) {
-  let payload = {
+  const payload = {
     msg: msg,
     timeout: timeout,
   };
-  let url = "/api/notification/pushErrMsg";
+  const url = "/api/notification/pushErrMsg";
   return request(url, payload);
 }
 
@@ -486,7 +486,7 @@ export async function forwardProxy(
   timeout: number = 7000,
   contentType: string = "text/html"
 ): Promise<IResForwardProxy> {
-  let data = {
+  const data = {
     url: url,
     method: method,
     timeout: timeout,
@@ -494,7 +494,7 @@ export async function forwardProxy(
     headers: headers,
     payload: payload,
   };
-  let url1 = "/api/network/forwardProxy";
+  const url1 = "/api/network/forwardProxy";
   return request(url1, data);
 }
 

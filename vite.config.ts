@@ -121,7 +121,7 @@ function cleanupDistFiles(options: { patterns: string[]; distDir: string }) {
     enforce: "post",
     writeBundle: {
       sequential: true,
-      order: "post" as "post",
+      order: "post" as const,
       async handler() {
         const fg = await import("fast-glob");
         const fs = await import("fs");

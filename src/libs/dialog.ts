@@ -47,7 +47,7 @@ export const inputDialogSync = async (args: {
     width?: string, height?: string
 }) => {
     return new Promise<string>((resolve) => {
-        let newargs = {
+        const newargs = {
             ...args, confirm: (text) => {
                 resolve(text);
             }, cancel: () => {
@@ -110,7 +110,7 @@ export const confirmDialog = (args: IConfirmDialogArgs) => {
 
 export const confirmDialogSync = async (args: IConfirmDialogArgs) => {
     return new Promise<HTMLElement>((resolve) => {
-        let newargs = {
+        const newargs = {
             ...args, confirm: (ele: HTMLElement) => {
                 resolve(ele);
             }, cancel: (ele: HTMLElement) => {
@@ -147,9 +147,9 @@ export const svelteDialog = (args: {
     width?: string, height?: string,
     callback?: () => void;
 }) => {
-    let container = document.createElement('div')
+    const container = document.createElement('div')
     container.style.display = 'contents';
-    let component = args.constructor(container);
+    const component = args.constructor(container);
     const { dialog, close } = simpleDialog({
         ...args, ele: container, callback: () => {
             component.$destroy();

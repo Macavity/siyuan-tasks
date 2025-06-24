@@ -8,7 +8,7 @@ import {
   adaptHotkey,
   getFrontend,
   getBackend,
-  IModel,
+  Model,
   Protyle,
   openWindow,
   IOperation,
@@ -17,6 +17,9 @@ import {
   lockScreen,
   ICard,
   ICardData,
+  Dock,
+  IEventBusMap,
+  IPluginDockTab,
 } from "siyuan";
 import "@/index.scss";
 
@@ -25,20 +28,27 @@ import TaskList from "@/components/task-list.svelte";
 import { SettingUtils } from "./libs/setting-utils";
 import { icons } from "./libs/icons";
 import { i18nStore } from "./stores/i18n.store";
+import { taskStore } from "./stores/task.store";
 import { type I18N } from "./types/i18n";
+import { mount } from "svelte";
+import { SiyuanEvents } from "./types/siyuan-events";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
 
+type TEventSwitchProtyle = CustomEvent<
+  IEventBusMap[SiyuanEvents.SWITCH_PROTYLE]
+>;
+
 export default class TaskListPlugin extends Plugin {
-  customTab: () => IModel;
+  customTab: () => Model;
   private isMobile: boolean;
   private settingUtils: SettingUtils;
-  private taskDock: any; // Store the task dock instance
+  private taskDock: { config: IPluginDockTab; model: Dock };
 
   async onload() {
     this.addIcons(icons);
-    i18nStore.set(this.i18n as I18N);
+    i18nStore.set(this.i18n as unknown as I18N);
     this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
     const frontEnd = getFrontend();
@@ -49,10 +59,10 @@ export default class TaskListPlugin extends Plugin {
       hotkey: "⇧⌘T",
       globalCallback: () => {
         // Toggle the task list dock
-        if (this.taskDock && this.taskDock.element) {
+        if (this.taskDock && this.taskDock.model.element) {
           // This will toggle the dock visibility
-          this.taskDock.element.style.display =
-            this.taskDock.element.style.display === "none" ? "block" : "none";
+          const el = this.taskDock.model.element;
+          el.style.display = el.style.display === "none" ? "block" : "none";
         }
       },
     });
@@ -75,13 +85,13 @@ export default class TaskListPlugin extends Plugin {
       update() {
         // console.log("Task list dock update");
       },
-      init: (dockInstance: any) => {
+      init: (dockInstance: Dock) => {
         // Create Svelte component for task list
-        new TaskList({
+        mount(TaskList, {
           target: dockInstance.element,
           props: {
             app: this.app,
-            i18n: this.i18n,
+            i18n: this.i18n as unknown as I18N,
           },
         });
       },
@@ -91,15 +101,28 @@ export default class TaskListPlugin extends Plugin {
     });
 
     // Set up event listeners for document and notebook changes
-    this.eventBus.on("switch-protyle", (e: any) => {
-      // Update current document and notebook info
+    this.eventBus.on(SiyuanEvents.SWITCH_PROTYLE, (e: TEventSwitchProtyle) => {
+      // Update current document and notebook info in the store
       if (e.detail?.protyle?.block?.rootID) {
-        // This will be handled by the TaskList component
+        const docInfo = {
+          id: e.detail.protyle.block.rootID,
+          rootID: e.detail.protyle.block.rootID,
+          name: "Current Document", // TODO: Get actual document name
+        };
+        taskStore.setCurrentDocInfo(docInfo);
         console.log("Switched to document:", e.detail.protyle.block.rootID);
       }
       if (e.detail?.protyle?.notebookId) {
+        const boxInfo = {
+          box: e.detail.protyle.notebookId,
+          name: "Current Notebook", // TODO: Get actual notebook name
+        };
+        taskStore.setCurrentBoxInfo(boxInfo);
         console.log("Switched to notebook:", e.detail.protyle.notebookId);
       }
+
+      // Refresh tasks when switching documents/notebooks
+      taskStore.fetchTasks("doc", "all");
     });
 
     this.settingUtils = new SettingUtils({

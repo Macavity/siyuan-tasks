@@ -1,56 +1,41 @@
 <script lang="ts">
+  import { createBubbler, stopPropagation } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { onMount } from 'svelte';
-  import { lsNotebooks, getHPathByID, sql } from '../api';
-  import { openTab } from 'siyuan';
+  import { App, openTab } from 'siyuan';
   import Settings from './settings.svelte';
   import { type I18N } from '../types/i18n';
+  import { taskStore, type TaskItem } from '../stores/task.store';
 
   interface Props {
-    app: any;
+    app: App;
     i18n: I18N;
   }
 
   let { app, i18n }: Props = $props();
 
-  interface TaskItem {
-    id: string;
-    markdown: string;
-    content: string;
-    box: string;
-    boxName: string;
-    root_id: string;
-    path: string;
-    created: string;
-    updated: string;
-    type: string;
-    subtype: string;
-    status: 'todo' | 'done';
-    docPath?: string;
-  }
+  // Local state for UI
+  let currentRange = $state<'doc' | 'box' | 'workspace'>('doc');
+  let taskStatus = $state<'all' | 'todo' | 'done'>('all');
+  let searchText = $state('');
+  let isExpanded = $state(true);
+  let showSettings = $state(false);
 
-  interface DocInfo {
-    id: string;
-    rootID: string;
-    name: string;
-  }
+  // Subscribe to store
+  let tasks = $state<TaskItem[]>([]);
+  let loading = $state(false);
+  let error = $state('');
+  let currentDocInfo = $state({ id: '', rootID: '', name: '' });
+  let currentBoxInfo = $state({ box: '', name: '' });
 
-  interface BoxInfo {
-    box: string;
-    name: string;
-  }
-
-  // State
-  let tasks: TaskItem[] = [];
-  let loading = false;
-  let error = '';
-  let currentRange: 'doc' | 'box' | 'workspace' = 'doc';
-  let taskStatus: 'all' | 'todo' | 'done' = 'all';
-  let searchText = '';
-  let isExpanded = true;
-  let currentDocInfo: DocInfo = { id: '', rootID: '', name: '' };
-  let currentBoxInfo: BoxInfo = { box: '', name: '' };
-  let notebooksCache: any[] = [];
-  let showSettings = false;
+  taskStore.subscribe(state => {
+    tasks = state.tasks;
+    loading = state.loading;
+    error = state.error;
+    currentDocInfo = state.currentDocInfo;
+    currentBoxInfo = state.currentBoxInfo;
+  });
 
   // Computed
   let filteredTasks = $derived(tasks.filter(task => {
@@ -80,85 +65,6 @@
   };
 
   // Methods
-  async function fetchTasks() {
-    loading = true;
-    error = '';
-
-    try {
-      // Build SQL query based on current range and status
-      let sqlQuery = "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
-      
-      if (taskStatus === 'todo') {
-        sqlQuery += " AND markdown LIKE '* [ ]%'";
-      } else if (taskStatus === 'done') {
-        sqlQuery += " AND markdown LIKE '* [_]%' AND markdown NOT LIKE '* [ ]%'";
-      }
-
-      if (currentRange === 'doc' && currentDocInfo.rootID) {
-        sqlQuery += ` AND root_id = '${currentDocInfo.rootID}'`;
-      } else if (currentRange === 'box' && currentBoxInfo.box) {
-        sqlQuery += ` AND box = '${currentBoxInfo.box}'`;
-      }
-
-      sqlQuery += " ORDER BY created ASC LIMIT 2000";
-
-      const tasksResult = await sql(sqlQuery);
-      
-      if (!tasksResult || tasksResult.length === 0) {
-        tasks = [];
-        return;
-      }
-
-      // Process tasks and add metadata
-      const processedTasks: TaskItem[] = [];
-      for (const task of tasksResult) {
-        const notebookName = await getNotebookName(task.box);
-        const docPath = await getDocumentHPath(task.root_id);
-        
-        processedTasks.push({
-          ...task,
-          boxName: notebookName,
-          docPath: docPath,
-          status: task.markdown.includes('* [ ]') ? 'todo' : 'done'
-        });
-      }
-
-      tasks = processedTasks;
-    } catch (err) {
-      const errorObj = err as Error;
-      console.error('Error fetching tasks:', errorObj);
-      error = errorObj.message || 'Unknown error';
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function getNotebookName(boxId: string): Promise<string> {
-    if (notebooksCache.length === 0) {
-      try {
-        const response = await lsNotebooks();
-        notebooksCache = response.notebooks || [];
-      } catch (err) {
-        console.error('Error fetching notebooks:', err);
-        return 'Unknown Notebook';
-      }
-    }
-    
-    const notebook = notebooksCache.find(nb => nb.id === boxId);
-    return notebook ? notebook.name : 'Unknown Notebook';
-  }
-
-  async function getDocumentHPath(docId: string): Promise<string> {
-    if (!docId) return 'Unknown Document';
-    try {
-      const response = await getHPathByID(docId);
-      return response || 'Unknown Document';
-    } catch (err) {
-      console.error('Error fetching document path:', err);
-      return 'Error/Unknown Document';
-    }
-  }
-
   function handleTaskClick(task: TaskItem) {
     if (task.root_id) {
       openTab({
@@ -189,47 +95,22 @@
     const currentIndex = statusOrder.indexOf(taskStatus);
     const nextIndex = (currentIndex + 1) % statusOrder.length;
     taskStatus = statusOrder[nextIndex] as 'all' | 'todo' | 'done';
-    fetchTasks();
+    taskStore.fetchTasks(currentRange, taskStatus);
   }
 
   function refreshData() {
-    fetchTasks();
+    taskStore.fetchTasks(currentRange, taskStatus);
   }
 
-  function setCurrentDocInfo(docId: string) {
-    // This would need to be implemented based on your app structure
-    currentDocInfo = { id: docId, rootID: docId, name: 'Current Document' };
-  }
-
-  function setCurrentBoxInfo(boxId: string) {
-    const notebook = notebooksCache.find(nb => nb.id === boxId);
-    currentBoxInfo = { 
-      box: boxId, 
-      name: notebook ? notebook.name : 'Unknown Notebook' 
-    };
+  function handleRangeChange(range: 'doc' | 'box' | 'workspace') {
+    currentRange = range;
+    taskStore.fetchTasks(currentRange, taskStatus);
   }
 
   // Lifecycle
   onMount(() => {
-    fetchTasks();
-    
-    // Set up event listeners for document/notebook changes
-    const handleProtyleSwitch = (e: any) => {
-      if (e.detail?.protyle?.block?.rootID) {
-        setCurrentDocInfo(e.detail.protyle.block.rootID);
-      }
-      if (e.detail?.protyle?.notebookId) {
-        setCurrentBoxInfo(e.detail.protyle.notebookId);
-      }
-      fetchTasks();
-    };
-
-    // Listen for protyle switch events
-    app.eventBus?.on('switch-protyle', handleProtyleSwitch);
-
-    return () => {
-      app.eventBus?.off('switch-protyle', handleProtyleSwitch);
-    };
+    // Initial data fetch
+    taskStore.fetchTasks(currentRange, taskStatus);
   });
 </script>
 
@@ -243,32 +124,37 @@
             <use xlink:href="#tasksDockIcon"></use>
           </svg>
           {i18n.pluginTitle || 'Task List'}
-          <span class="task-status" on:click={toggleTaskStatus}>
+          <button 
+            class="task-status" 
+            onclick={toggleTaskStatus}
+            onkeydown={(e) => e.key === 'Enter' && toggleTaskStatus()}
+            aria-label="Toggle task status filter"
+          >
             ({taskStatusMap[taskStatus]})
-          </span>
+          </button>
         </h3>
       </div>
       
       <div class="btn-list">
-        <button class="btn-icon" on:click={refreshData} title={i18n.options?.refresh || 'Refresh'}>
+        <button class="btn-icon" onclick={refreshData} title={i18n.options?.refresh || 'Refresh'} aria-label="Refresh tasks">
           <svg class="icon">
             <use xlink:href="#iconRefresh"></use>
           </svg>
         </button>
         
-        <button class="btn-icon" on:click={() => isExpanded = !isExpanded} title={isExpanded ? 'Collapse' : 'Expand'}>
+        <button class="btn-icon" onclick={() => isExpanded = !isExpanded} title={isExpanded ? 'Collapse' : 'Expand'} aria-label={isExpanded ? 'Collapse' : 'Expand'}>
           <svg class="icon">
             <use xlink:href={isExpanded ? '#iconMin' : '#iconMax'}></use>
           </svg>
         </button>
         
-        <button class="btn-icon" on:click={toggleTaskStatus} title={i18n.options?.switch || 'Switch Status'}>
+        <button class="btn-icon" onclick={toggleTaskStatus} title={i18n.options?.switch || 'Switch Status'} aria-label="Switch task status">
           <svg class="icon">
             <use xlink:href="#iconRepeat"></use>
           </svg>
         </button>
         
-        <button class="btn-icon" on:click={() => showSettings = true} title={i18n.setting?.title || 'Settings'}>
+        <button class="btn-icon" onclick={() => showSettings = true} title={i18n.setting?.title || 'Settings'} aria-label="Open settings">
           <svg class="icon">
             <use xlink:href="#iconSettings"></use>
           </svg>
@@ -280,19 +166,19 @@
     <div class="range-tabs">
       <button 
         class="tab-btn {currentRange === 'doc' ? 'active' : ''}" 
-        on:click={() => { currentRange = 'doc'; fetchTasks(); }}
+        onclick={() => handleRangeChange('doc')}
       >
         {i18n.range?.doc || 'Document'} ({taskCounts.doc})
       </button>
       <button 
         class="tab-btn {currentRange === 'box' ? 'active' : ''}" 
-        on:click={() => { currentRange = 'box'; fetchTasks(); }}
+        onclick={() => handleRangeChange('box')}
       >
         {i18n.range?.box || 'Notebook'} ({taskCounts.box})
       </button>
       <button 
         class="tab-btn {currentRange === 'workspace' ? 'active' : ''}" 
-        on:click={() => { currentRange = 'workspace'; fetchTasks(); }}
+        onclick={() => handleRangeChange('workspace')}
       >
         {i18n.range?.workspace || 'Workspace'} ({taskCounts.workspace})
       </button>
@@ -319,7 +205,7 @@
     {:else if error}
       <div class="error">
         <span>Error: {error}</span>
-        <button on:click={fetchTasks}>Retry</button>
+        <button onclick={refreshData}>Retry</button>
       </div>
     {:else if filteredTasks.length === 0}
       <div class="empty">
@@ -328,9 +214,11 @@
     {:else}
       <div class="task-list">
         {#each filteredTasks as task (task.id)}
-          <div 
+          <button 
             class="task-item {task.status}" 
-            on:click={() => handleTaskClick(task)}
+            onclick={() => handleTaskClick(task)}
+            onkeydown={(e) => e.key === 'Enter' && handleTaskClick(task)}
+            aria-label="Open task: {getTaskText(task)}"
           >
             <div class="task-checkbox">
               <input 
@@ -345,7 +233,7 @@
                 {task.boxName} / {task.docPath}
               </div>
             </div>
-          </div>
+          </button>
         {/each}
       </div>
     {/if}
@@ -353,14 +241,27 @@
 
   <!-- Settings Modal -->
   {#if showSettings}
-    <div class="settings-overlay" on:click={() => showSettings = false}>
-      <div class="settings-container" on:click|stopPropagation>
+    <div 
+      class="settings-overlay" 
+      onclick={() => showSettings = false} 
+      onkeydown={(e) => e.key === 'Escape' && (showSettings = false)}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Settings dialog"
+      tabindex="-1"
+    >
+      <button 
+        class="settings-container" 
+        onclick={stopPropagation(bubble('click'))}
+        onkeydown={(e) => e.key === 'Escape' && (showSettings = false)}
+        aria-label="Settings content"
+      >
         <Settings 
           {app} 
           {i18n} 
           onClose={() => showSettings = false} 
         />
-      </div>
+      </button>
     </div>
   {/if}
 </div>
