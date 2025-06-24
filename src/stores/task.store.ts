@@ -1,5 +1,6 @@
 import { writable } from "svelte/store";
 import { lsNotebooks, getHPathByID, sql } from "../api";
+import { TaskRange, TaskStatus } from "../types/tasks";
 
 export interface TaskItem {
   id: string;
@@ -13,7 +14,7 @@ export interface TaskItem {
   updated: string;
   type: string;
   subtype: string;
-  status: "todo" | "done";
+  status: TaskStatus.TODO | TaskStatus.DONE;
   docPath?: string;
 }
 
@@ -74,50 +75,55 @@ function createTaskStore() {
       update((state) => ({ ...state, notebooksCache: notebooks })),
 
     // Complex actions
-    async fetchTasks(
-      range: "doc" | "box" | "workspace",
-      status: "all" | "todo" | "done"
-    ) {
+    async fetchTasks(range: TaskRange, status: TaskStatus) {
       update((state) => ({ ...state, loading: true, error: "" }));
-
       try {
-        // Build SQL query based on current range and status
         let sqlQuery =
           "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
 
-        if (status === "todo") {
-          sqlQuery += " AND markdown LIKE '* [ ]%'";
-        } else if (status === "done") {
-          sqlQuery +=
-            " AND markdown LIKE '* [_]%' AND markdown NOT LIKE '* [ ]%'";
-        }
-
-        if (range === "doc" && this.getCurrentDocInfo()?.rootID) {
+        if (range === TaskRange.DOC && this.getCurrentDocInfo()?.rootID) {
           sqlQuery += ` AND root_id = '${this.getCurrentDocInfo().rootID}'`;
-        } else if (range === "box" && this.getCurrentBoxInfo()?.box) {
+        } else if (range === TaskRange.BOX && this.getCurrentBoxInfo()?.box) {
           sqlQuery += ` AND box = '${this.getCurrentBoxInfo().box}'`;
         }
 
         sqlQuery += " ORDER BY created ASC LIMIT 2000";
 
         const tasksResult = await sql(sqlQuery);
-
         if (!tasksResult || tasksResult.length === 0) {
           update((state) => ({ ...state, tasks: [], loading: false }));
           return;
         }
 
+        // Filtering by markdown prefix
+        function isTodo(markdown: string) {
+          return /^-\s*\[ \]/.test(markdown);
+        }
+        function isDone(markdown: string) {
+          return /^-\s*\[[xX]\]/.test(markdown);
+        }
+
+        const filtered = tasksResult.filter((task) => {
+          if (status === TaskStatus.TODO) return isTodo(task.markdown);
+          if (status === TaskStatus.DONE) return isDone(task.markdown);
+          return isTodo(task.markdown) || isDone(task.markdown);
+        });
+
         // Process tasks and add metadata
         const processedTasks: TaskItem[] = [];
-        for (const task of tasksResult) {
+        for (const task of filtered) {
           const notebookName = await this.getNotebookName(task.box);
           const docPath = await this.getDocumentHPath(task.root_id);
-
+          const taskStatus: TaskStatus = isTodo(task.markdown)
+            ? TaskStatus.TODO
+            : isDone(task.markdown)
+              ? TaskStatus.DONE
+              : TaskStatus.ALL;
           processedTasks.push({
             ...task,
             boxName: notebookName,
             docPath: docPath,
-            status: task.markdown.includes("* [ ]") ? "todo" : "done",
+            status: taskStatus,
           });
         }
 

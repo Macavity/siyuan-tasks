@@ -1,22 +1,7 @@
 import {
   Plugin,
-  showMessage,
-  confirm,
-  Dialog,
-  Menu,
-  openTab,
-  adaptHotkey,
   getFrontend,
-  getBackend,
   Model,
-  Protyle,
-  openWindow,
-  IOperation,
-  Constants,
-  openMobileFileById,
-  lockScreen,
-  ICard,
-  ICardData,
   Dock,
   IEventBusMap,
   IPluginDockTab,
@@ -30,6 +15,7 @@ import { icons } from "./libs/icons";
 import { i18nStore } from "./stores/i18n.store";
 import { taskStore } from "./stores/task.store";
 import { type I18N } from "./types/i18n";
+import { TaskRange, TaskStatus } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
 
@@ -74,7 +60,7 @@ export default class TaskListPlugin extends Plugin {
       callback: (data) => {
         // Settings changed, refresh tasks if needed
         console.log("Settings updated:", data);
-        taskStore.fetchTasks("doc", "all");
+        taskStore.fetchTasks(TaskRange.DOC, TaskStatus.ALL);
       },
     });
 
@@ -179,7 +165,7 @@ export default class TaskListPlugin extends Plugin {
       }
 
       // Refresh tasks when switching documents/notebooks
-      taskStore.fetchTasks("doc", "all");
+      taskStore.fetchTasks(TaskRange.DOC, TaskStatus.ALL);
     });
   }
 
