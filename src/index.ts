@@ -67,6 +67,63 @@ export default class TaskListPlugin extends Plugin {
       },
     });
 
+    // Initialize settings
+    this.settingUtils = new SettingUtils({
+      plugin: this,
+      name: STORAGE_NAME,
+      callback: (data) => {
+        // Settings changed, refresh tasks if needed
+        console.log("Settings updated:", data);
+        taskStore.fetchTasks("doc", "all");
+      },
+    });
+
+    // Add settings items
+    this.settingUtils.addItem({
+      key: "autoRefresh",
+      value: true,
+      type: "checkbox",
+      title: "Auto refresh tasks",
+      description: "Automatically refresh tasks when switching documents",
+    });
+
+    this.settingUtils.addItem({
+      key: "refreshInterval",
+      value: 30,
+      type: "number",
+      title: "Refresh interval (seconds)",
+      description: "How often to refresh tasks automatically",
+    });
+
+    this.settingUtils.addItem({
+      key: "showCompleted",
+      value: true,
+      type: "checkbox",
+      title: "Show completed tasks",
+      description: "Include completed tasks in the task list",
+    });
+
+    this.settingUtils.addItem({
+      key: "maxTasks",
+      value: 100,
+      type: "number",
+      title: "Maximum tasks to display",
+      description: "Maximum number of tasks to load and display",
+    });
+
+    this.settingUtils.addItem({
+      key: "sortBy",
+      value: "created",
+      type: "select",
+      title: "Sort by",
+      description: "How to sort tasks in the list",
+      options: {
+        created: "Created date",
+        updated: "Updated date",
+        content: "Content",
+      },
+    });
+
     this.taskDock = this.addDock({
       config: {
         position: "RightTop",
@@ -123,11 +180,6 @@ export default class TaskListPlugin extends Plugin {
 
       // Refresh tasks when switching documents/notebooks
       taskStore.fetchTasks("doc", "all");
-    });
-
-    this.settingUtils = new SettingUtils({
-      plugin: this,
-      name: STORAGE_NAME,
     });
   }
 

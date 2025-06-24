@@ -1,10 +1,6 @@
 <script lang="ts">
-  import { createBubbler, stopPropagation } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import { onMount } from 'svelte';
-  import { App, openTab } from 'siyuan';
-  import Settings from './settings.svelte';
+  import { type App, openTab } from 'siyuan';
   import { type I18N } from '../types/i18n';
   import { taskStore, type TaskItem } from '../stores/task.store';
 
@@ -20,7 +16,6 @@
   let taskStatus = $state<'all' | 'todo' | 'done'>('all');
   let searchText = $state('');
   let isExpanded = $state(true);
-  let showSettings = $state(false);
 
   // Subscribe to store
   let tasks = $state<TaskItem[]>([]);
@@ -153,12 +148,6 @@
             <use xlink:href="#iconRepeat"></use>
           </svg>
         </button>
-        
-        <button class="btn-icon" onclick={() => showSettings = true} title={i18n.setting?.title || 'Settings'} aria-label="Open settings">
-          <svg class="icon">
-            <use xlink:href="#iconSettings"></use>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -238,32 +227,6 @@
       </div>
     {/if}
   </div>
-
-  <!-- Settings Modal -->
-  {#if showSettings}
-    <div 
-      class="settings-overlay" 
-      onclick={() => showSettings = false} 
-      onkeydown={(e) => e.key === 'Escape' && (showSettings = false)}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Settings dialog"
-      tabindex="-1"
-    >
-      <button 
-        class="settings-container" 
-        onclick={stopPropagation(bubble('click'))}
-        onkeydown={(e) => e.key === 'Escape' && (showSettings = false)}
-        aria-label="Settings content"
-      >
-        <Settings 
-          {app} 
-          {i18n} 
-          onClose={() => showSettings = false} 
-        />
-      </button>
-    </div>
-  {/if}
 </div>
 
 <style>
@@ -436,22 +399,5 @@
     font-size: 12px;
     color: var(--b3-theme-on-surface-variant);
     opacity: 0.8;
-  }
-
-  .settings-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  .settings-container {
-    padding: 20px;
   }
 </style> 
