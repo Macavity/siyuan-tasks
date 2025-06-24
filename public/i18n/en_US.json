@@ -7,5 +7,28 @@
   "noTasksFound": "No tasks found.",
   "errorFetchingTasks": "Error fetching tasks:",
   "errorFetchingNotebookInfo": "Error fetching notebook info for task:",
-  "errorFetchingDocumentPath": "Error fetching document path for task:"
+  "errorFetchingDocumentPath": "Error fetching document path for task:",
+  "pluginTitle": "Task List",
+  "taskStatus": {
+    "all": "All",
+    "todo": "Todo",
+    "done": "Done"
+  },
+  "options": {
+    "refresh": "Refresh",
+    "switch": "Switch Status",
+    "search": "Search",
+    "filter": "Filter",
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "range": {
+    "doc": "Document",
+    "box": "Notebook",
+    "workspace": "Workspace"
+  },
+  "searchPlaceholder": "Search tasks...",
+  "setting": {
+    "title": "Settings"
+  }
 }

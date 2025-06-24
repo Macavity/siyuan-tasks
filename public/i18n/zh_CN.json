@@ -7,5 +7,25 @@
   "noTasksFound": "未找到任何任务。",
   "errorFetchingTasks": "获取任务时出错：",
   "errorFetchingNotebookInfo": "获取任务所在笔记本信息时出错：",
-  "errorFetchingDocumentPath": "获取任务所在文档路径时出错："
+  "errorFetchingDocumentPath": "获取任务所在文档路径时出错：",
+  "pluginTitle": "任务列表",
+  "taskStatus": {
+    "all": "全部",
+    "todo": "待办",
+    "done": "已完成"
+  },
+  "options": {
+    "refresh": "刷新",
+    "switch": "切换状态",
+    "search": "搜索",
+    "filter": "筛选",
+    "expand": "展开",
+    "collapse": "收起"
+  },
+  "range": {
+    "doc": "文档",
+    "box": "笔记本",
+    "workspace": "工作空间"
+  },
+  "searchPlaceholder": "搜索任务..."
 }

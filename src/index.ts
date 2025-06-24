@@ -24,6 +24,8 @@ import TaskList from "@/components/task-list.svelte";
 
 import { SettingUtils } from "./libs/setting-utils";
 import { icons } from "./libs/icons";
+import { i18nStore } from "./stores/i18n.store";
+import { type I18N } from "./types/i18n";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
@@ -36,6 +38,7 @@ export default class TaskListPlugin extends Plugin {
 
   async onload() {
     this.addIcons(icons);
+    i18nStore.set(this.i18n as I18N);
     this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
     const frontEnd = getFrontend();
@@ -87,14 +90,22 @@ export default class TaskListPlugin extends Plugin {
       },
     });
 
-    try {
-      this.settingUtils.load();
-    } catch (error) {
-      console.error(
-        "Error loading settings storage, probably empty config json:",
-        error
-      );
-    }
+    // Set up event listeners for document and notebook changes
+    this.eventBus.on("switch-protyle", (e: any) => {
+      // Update current document and notebook info
+      if (e.detail?.protyle?.block?.rootID) {
+        // This will be handled by the TaskList component
+        console.log("Switched to document:", e.detail.protyle.block.rootID);
+      }
+      if (e.detail?.protyle?.notebookId) {
+        console.log("Switched to notebook:", e.detail.protyle.notebookId);
+      }
+    });
+
+    this.settingUtils = new SettingUtils({
+      plugin: this,
+      name: STORAGE_NAME,
+    });
   }
 
   onLayoutReady() {
