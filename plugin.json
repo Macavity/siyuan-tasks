@@ -1,9 +1,9 @@
 {
-  "name": "plugin-sample-vite-svelte",
+  "name": "sy-tasks",
   "author": "frostime",
   "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
-  "version": "0.3.6",
-  "minAppVersion": "3.0.12",
+  "version": "0.1.0",
+  "minAppVersion": "3.0.0",
   "backends": [
     "windows",
     "linux",
@@ -21,25 +21,19 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite and svelte",
-    "zh_CN": "插件样例 vite + svelte 版"
+    "default": "Task List Panel",
+    "zh_CN": "任务列表面板"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite and svelte",
-    "zh_CN": "使用 vite 和 svelte 开发的思源插件样例"
+    "default": "Displays a panel listing all tasks from all notebooks.",
+    "zh_CN": "显示一个面板，列出所有笔记本中的所有任务。"
   },
   "readme": {
     "en_US": "README.md",
     "zh_CN": "README_zh_CN.md"
   },
   "funding": {
-    "custom": [
-      ""
-    ]
+    "custom": [""]
   },
-  "keywords": [
-    "plugin",
-    "sample",
-    "插件样例"
-  ]
+  "keywords": ["tasks", "todo", "list", "obsidian", "task management"]
 }
