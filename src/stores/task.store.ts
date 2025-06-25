@@ -217,8 +217,12 @@ function createTaskStore() {
       };
     },
 
+    isGroupedTasks(tasks: TaskItem[] | GroupedTasks): tasks is GroupedTasks {
+      return !Array.isArray(tasks);
+    },
+
     // Smart refresh that only updates if something changed
-    async refreshTasksIfNeeded(): Promise<void> {
+    async refreshTasksIfNeeded(force = false): Promise<void> {
       let state: TaskState;
       subscribe((s) => (state = s))();
 
@@ -231,7 +235,7 @@ function createTaskStore() {
       );
 
       // Compare fresh data with current tasks
-      if (this.hasTasksChanged(currentState.tasks, freshTasks)) {
+      if (force || this.hasTasksChanged(currentState.tasks, freshTasks)) {
         // Only update store if data has actually changed
         this.setTasks(freshTasks);
       }

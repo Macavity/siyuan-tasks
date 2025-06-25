@@ -1,21 +1,23 @@
 <script lang="ts">
-    import {createEventDispatcher} from "svelte";
+  import { type SiYuanIcon } from "@/types/siyuan-icon";
     import Icon from "./icon.svelte";
-    import { type SiYuanIcon } from "@/types/siyuan-icon";
 
-    export let label: string | null = null;
-    export let icon: SiYuanIcon | null = null;
-    export let isFocused: boolean = false;
-    export let tooltip: string | null = null;
+    interface Props {
+        label?: string;
+        icon: SiYuanIcon;
+        isFocused?: boolean;
+        tooltip?: string;
+        onClick: () => void;
+    }
 
-    const dispatch = createEventDispatcher();
+    const { label, icon, isFocused, tooltip, onClick }: Props = $props();
 </script>
 
 <button
         class="block__icon fn__flex-center ariaLabel"
         class:item--focus={isFocused}
-        on:click={(event) => dispatch("click", { event })}
-        on:keydown={(event) => dispatch("click", { event})}
+        onclick={onClick}
+        onkeydown={onClick}
         title={tooltip}
 >
     {#if icon}

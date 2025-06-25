@@ -5,17 +5,21 @@
   import { taskStore, type TaskItem } from '../stores/task.store';
   import { TaskRange, TaskStatus, TaskDisplayMode } from '../types/tasks';
   import { filterStateService, type FilterState } from '../libs/filter-state.service';
+  import { SettingUtils } from '../libs/setting-utils';
   import TaskHeader from './task-header.svelte';
   import RangeTabs from './range-tabs.svelte';
   import TaskSearch from './task-search.svelte';
   import TaskListContent from './task-list-content.svelte';
+  import { Logger } from '../services/logger.service';
+  import { configStore, PluginSetting } from '../stores/config.store';
 
   interface Props {
     app: App;
     i18n: I18N;
+    settingUtils: SettingUtils;
   }
 
-  let { app, i18n }: Props = $props();
+  let { app, i18n, settingUtils }: Props = $props();
 
   // Local state for UI
   let currentRange = $state<TaskRange>(TaskRange.DOC);
@@ -23,7 +27,7 @@
   let searchText = $state('');
   let isExpanded = $state(true);
   let displayMode = $state<TaskDisplayMode>(TaskDisplayMode.ONLY_TASKS);
-
+  
   // Subscribe to store
   let tasks = $state<TaskItem[]>([]);
   let loading = $state(false);
@@ -39,6 +43,8 @@
     currentBoxInfo = state.currentBoxInfo;
   });
 
+  const configShowCompleted = $derived($configStore.showCompleted);
+
   // Save filter state
   function saveFilterState() {
     const state: FilterState = {
@@ -52,15 +58,27 @@
 
   // Computed
   let filteredTasks = $derived(tasks.filter(task => {
+    //Logger.debug("Filtering task:", task);
+    // Filter by search text
     if (searchText && !task.markdown.toLowerCase().includes(searchText.toLowerCase())) {
       return false;
     }
+    
+    // Filter by task status
     if (taskStatus === TaskStatus.TODO) {
       return task.status === TaskStatus.TODO;
     }
     if (taskStatus === TaskStatus.DONE) {
       return task.status === TaskStatus.DONE;
     }
+    
+    // Filter out completed tasks if showCompleted is false
+    Logger.debug("showCompleted:", configShowCompleted);
+    if (!configShowCompleted && task.status === TaskStatus.DONE) {
+      Logger.debug("Filtering out completed task:", task);
+      return false;
+    }
+    
     return true;
   }));
 
@@ -87,7 +105,8 @@
   }
 
   function refreshData() {
-    taskStore.refreshTasksIfNeeded();
+    Logger.debug("Refreshing tasks");
+    taskStore.refreshTasksIfNeeded(true);
   }
 
   function handleRangeChange(range: TaskRange) {
@@ -108,6 +127,12 @@
     currentRange = savedState.range;
     taskStatus = savedState.status;
     displayMode = savedState.displayMode;
+    
+    // Load initial settings
+    const settingValue = settingUtils.get('showCompleted');
+    if (settingValue !== undefined) {
+      showCompleted = settingValue as boolean;
+    }
     
     // Sync the store's filter state
     taskStore.setCurrentRange(currentRange);

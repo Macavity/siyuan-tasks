@@ -11,11 +11,14 @@ export default [
     files: ["src/**/*.svelte"],
     plugins: {
       svelte: eslintPluginSvelte,
+      "@typescript-eslint": tseslint.plugin,
     },
     languageOptions: {
       parser: svelteParser,
       parserOptions: {
         parser: tseslint.parser,
+        extraFileExtensions: [".svelte"],
+        project: "./tsconfig.json",
       },
     },
     rules: {
@@ -23,6 +26,22 @@ export default [
       // Disable specific a11y rules
       "svelte/a11y-click-events-have-key-events": "off",
       "svelte/a11y-missing-attribute": "off",
+      // Add Svelte-specific unused variable detection
+      "svelte/no-unused-svelte-ignore": "warn",
+      "svelte/valid-compile": "warn",
+      // TypeScript ESLint rules for Svelte files
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
     },
   },
   {
@@ -30,6 +49,10 @@ export default [
     languageOptions: {
       globals: {
         ...globals.browser,
+      },
+      parserOptions: {
+        project: "./tsconfig.json",
+        extraFileExtensions: [".svelte"],
       },
     },
     rules: {
@@ -42,6 +65,10 @@ export default [
         },
       ],
       "@typescript-eslint/no-unused-expressions": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
     },
   },
   {

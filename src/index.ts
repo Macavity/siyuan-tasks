@@ -1,11 +1,4 @@
-import {
-  Plugin,
-  getFrontend,
-  Model,
-  Dock,
-  IEventBusMap,
-  IPluginDockTab,
-} from "siyuan";
+import { Plugin, Model, Dock, IEventBusMap, IPluginDockTab } from "siyuan";
 import "@/index.scss";
 
 import TaskList from "@/components/task-list.svelte";
@@ -18,6 +11,8 @@ import { type I18N } from "./types/i18n";
 import { TaskDisplayMode } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
+import { Logger } from "./services/logger.service";
+import { configStore, PluginSetting } from "./stores/config.store";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
@@ -28,7 +23,6 @@ type TEventSwitchProtyle = CustomEvent<
 
 export default class TaskListPlugin extends Plugin {
   customTab: () => Model;
-  private isMobile: boolean;
   private settingUtils: SettingUtils;
   private taskDock: { config: IPluginDockTab; model: Dock };
 
@@ -36,9 +30,6 @@ export default class TaskListPlugin extends Plugin {
     this.addIcons(icons);
     i18nStore.set(this.i18n as unknown as I18N);
     this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
-
-    const frontEnd = getFrontend();
-    this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
     this.addCommand({
       langKey: "showTaskList",
@@ -53,75 +44,7 @@ export default class TaskListPlugin extends Plugin {
       },
     });
 
-    // Initialize settings
-    this.settingUtils = new SettingUtils({
-      plugin: this,
-      name: STORAGE_NAME,
-      callback: (data) => {
-        // Settings changed, refresh tasks if needed
-        console.log("Settings updated:", data);
-        taskStore.refreshTasksIfNeeded();
-      },
-    });
-
-    // Add settings items
-    this.settingUtils.addItem({
-      key: "autoRefresh",
-      value: true,
-      type: "checkbox",
-      title: "Auto refresh tasks",
-      description: "Automatically refresh tasks when switching documents",
-    });
-
-    this.settingUtils.addItem({
-      key: "refreshInterval",
-      value: 30,
-      type: "number",
-      title: "Refresh interval (seconds)",
-      description: "How often to refresh tasks automatically",
-    });
-
-    this.settingUtils.addItem({
-      key: "showCompleted",
-      value: true,
-      type: "checkbox",
-      title: "Show completed tasks",
-      description: "Include completed tasks in the task list",
-    });
-
-    this.settingUtils.addItem({
-      key: "maxTasks",
-      value: 100,
-      type: "number",
-      title: "Maximum tasks to display",
-      description: "Maximum number of tasks to load and display",
-    });
-
-    this.settingUtils.addItem({
-      key: "sortBy",
-      value: "created",
-      type: "select",
-      title: "Sort by",
-      description: "How to sort tasks in the list",
-      options: {
-        created: "Created date",
-        updated: "Updated date",
-        content: "Content",
-      },
-    });
-
-    this.settingUtils.addItem({
-      key: "displayMode",
-      value: TaskDisplayMode.ONLY_TASKS,
-      type: "select",
-      title: "Task List Display Mode",
-      description: "How to display tasks in the list",
-      options: {
-        [TaskDisplayMode.ONLY_TASKS]: "Only Tasks",
-        [TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS]: "Notebook, Document, Tasks",
-        [TaskDisplayMode.NOTEBOOK_TASKS]: "Notebook, Tasks",
-      },
-    });
+    this.initialiseSettings();
 
     this.taskDock = this.addDock({
       config: {
@@ -148,17 +71,17 @@ export default class TaskListPlugin extends Plugin {
           props: {
             app: this.app,
             i18n: this.i18n as unknown as I18N,
+            settingUtils: this.settingUtils,
           },
         });
       },
       destroy() {
-        console.log("Task list dock destroyed");
+        // console.log("Task list dock destroyed");
       },
     });
 
     // Set up event listeners for document and notebook changes
     this.eventBus.on(SiyuanEvents.SWITCH_PROTYLE, (e: TEventSwitchProtyle) => {
-      console.log("Switched to document:", e.detail.protyle.block.rootID);
       // Update current document and notebook info in the store
       if (e.detail?.protyle?.block?.rootID) {
         const docInfo = {
@@ -167,7 +90,7 @@ export default class TaskListPlugin extends Plugin {
           name: "Current Document", // TODO: Get actual document name
         };
         taskStore.setCurrentDocInfo(docInfo);
-        console.log("Switched to document:", e.detail.protyle.block.rootID);
+        Logger.debug("Switched to document:", e.detail.protyle.block.rootID);
       }
       if (e.detail?.protyle?.notebookId) {
         const boxInfo = {
@@ -175,12 +98,102 @@ export default class TaskListPlugin extends Plugin {
           name: "Current Notebook", // TODO: Get actual notebook name
         };
         taskStore.setCurrentBoxInfo(boxInfo);
-        console.log("Switched to notebook:", e.detail.protyle.notebookId);
+        Logger.debug("Switched to notebook:", e.detail.protyle.notebookId);
       }
 
       // Refresh tasks while preserving the current filter level
       // Use the smart refresh function that only updates if needed
       taskStore.refreshTasksIfNeeded();
+    });
+  }
+
+  private initialiseSettings() {
+    // Initialize settings
+    this.settingUtils = new SettingUtils({
+      plugin: this,
+      name: STORAGE_NAME,
+      callback: (data) => {
+        // Settings changed, refresh tasks if needed
+        Logger.info("Settings updated:", data);
+        this.updateStoreFromSettingUtils();
+        taskStore.refreshTasksIfNeeded(true);
+      },
+    });
+
+    // Add settings items
+    this.settingUtils.addItem({
+      key: PluginSetting.AutoRefresh,
+      value: true,
+      type: "checkbox",
+      title: "Auto refresh tasks",
+      description: "Automatically refresh tasks when switching documents",
+    });
+
+    this.settingUtils.addItem({
+      key: PluginSetting.RefreshInterval,
+      value: 30,
+      type: "number",
+      title: "Refresh interval (seconds)",
+      description: "How often to refresh tasks automatically",
+    });
+
+    this.settingUtils.addItem({
+      key: PluginSetting.ShowCompleted,
+      value: true,
+      type: "checkbox",
+      title: "Show completed tasks",
+      description: "Include completed tasks in the task list",
+    });
+
+    // this.settingUtils.addItem({
+    //   key: PluginSetting.MaxTasks,
+    //   value: 100,
+    //   type: "number",
+    //   title: "Maximum tasks to display",
+    //   description: "Maximum number of tasks to load and display",
+    // });
+
+    this.settingUtils.addItem({
+      key: PluginSetting.SortBy,
+      value: "created",
+      type: "select",
+      title: "Sort by",
+      description: "How to sort tasks in the list",
+      options: {
+        created: "Created date",
+        updated: "Updated date",
+        content: "Content",
+      },
+    });
+
+    // this.settingUtils.addItem({
+    //   key: PluginSetting.DisplayMode,
+    //   value: TaskDisplayMode.ONLY_TASKS,
+    //   type: "select",
+    //   title: "Task List Display Mode",
+    //   description: "How to display tasks in the list",
+    //   options: {
+    //     [TaskDisplayMode.ONLY_TASKS]: "Only Tasks",
+    //     [TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS]: "Notebook, Document, Tasks",
+    //     [TaskDisplayMode.NOTEBOOK_TASKS]: "Notebook, Tasks",
+    //   },
+    // });
+  }
+
+  private updateStoreFromSettingUtils() {
+    configStore.set({
+      autoRefresh: this.settingUtils.get(PluginSetting.AutoRefresh) as boolean,
+      refreshInterval: this.settingUtils.get(
+        PluginSetting.RefreshInterval
+      ) as number,
+      showCompleted: this.settingUtils.get(
+        PluginSetting.ShowCompleted
+      ) as boolean,
+      maxTasks: this.settingUtils.get(PluginSetting.MaxTasks) as number,
+      sortBy: this.settingUtils.get(PluginSetting.SortBy) as string,
+      displayMode: this.settingUtils.get(
+        PluginSetting.DisplayMode
+      ) as TaskDisplayMode,
     });
   }
 

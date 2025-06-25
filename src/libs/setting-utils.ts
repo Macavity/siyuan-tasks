@@ -304,7 +304,7 @@ export class SettingUtils {
       case "checkbox":
         const element: HTMLInputElement = document.createElement("input");
         element.type = "checkbox";
-        element.checked = item.value;
+        element.checked = item.value as boolean;
         element.className = "b3-switch fn__flex-center";
         itemElement = element;
         element.onchange = item.action?.callback ?? (() => {});
@@ -321,7 +321,7 @@ export class SettingUtils {
           optionElement.text = text;
           selectElement.appendChild(optionElement);
         }
-        selectElement.value = item.value;
+        selectElement.value = item.value as string;
         selectElement.onchange = item.action?.callback ?? (() => {});
         itemElement = selectElement;
         break;
@@ -330,11 +330,11 @@ export class SettingUtils {
         sliderElement.type = "range";
         sliderElement.className =
           "b3-slider fn__size200 b3-tooltips b3-tooltips__n";
-        sliderElement.ariaLabel = item.value;
+        sliderElement.ariaLabel = item.value as string;
         sliderElement.min = item.slider?.min.toString() ?? "0";
         sliderElement.max = item.slider?.max.toString() ?? "100";
         sliderElement.step = item.slider?.step.toString() ?? "1";
-        sliderElement.value = item.value;
+        sliderElement.value = item.value as string;
         sliderElement.onchange = () => {
           sliderElement.ariaLabel = sliderElement.value;
           item.action?.callback();
@@ -346,7 +346,7 @@ export class SettingUtils {
           document.createElement("input");
         textInputElement.className =
           "b3-text-field fn__flex-center fn__size200";
-        textInputElement.value = item.value;
+        textInputElement.value = item.value as string;
         textInputElement.onchange = item.action?.callback ?? (() => {});
         itemElement = textInputElement;
         textInputElement.addEventListener("keydown", preventEnterConfirm);
@@ -355,7 +355,7 @@ export class SettingUtils {
         const textareaElement: HTMLTextAreaElement =
           document.createElement("textarea");
         textareaElement.className = "b3-text-field fn__block";
-        textareaElement.value = item.value;
+        textareaElement.value = item.value as string;
         textareaElement.onchange = item.action?.callback ?? (() => {});
         itemElement = textareaElement;
         break;
@@ -363,7 +363,7 @@ export class SettingUtils {
         const numberElement: HTMLInputElement = document.createElement("input");
         numberElement.type = "number";
         numberElement.className = "b3-text-field fn__flex-center fn__size200";
-        numberElement.value = item.value;
+        numberElement.value = item.value as string;
         itemElement = numberElement;
         numberElement.addEventListener("keydown", preventEnterConfirm);
         break;

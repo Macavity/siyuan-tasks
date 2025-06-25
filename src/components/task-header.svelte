@@ -42,11 +42,11 @@
     </div>
     
     <div class="btn-list">
-      <Button icon="iconRefresh" on:click={onRefresh} tooltip={i18n.options?.refresh || 'Refresh'}/>
+      <Button icon="iconRefresh" onClick={onRefresh} tooltip={i18n.options?.refresh || 'Refresh'}/>
       
-      <Button icon={isExpanded ? 'iconContract' : 'iconExpand'} on:click={onToggleExpanded} tooltip={isExpanded ? 'Collapse' : 'Expand'}/>
+      <Button icon={isExpanded ? 'iconContract' : 'iconExpand'} onClick={onToggleExpanded} tooltip={isExpanded ? 'Collapse' : 'Expand'}/>
       
-      <Button icon="iconSoftWrap" on:click={onToggleStatus} tooltip={i18n.options?.switch || 'Switch Status'}/>
+      <Button icon="iconSoftWrap" onClick={onToggleStatus} tooltip={i18n.options?.switch || 'Switch Status'}/>
     </div>
   </div>
 </div>
