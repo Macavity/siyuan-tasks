@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type App } from 'siyuan';
   import { type I18N } from '../types/i18n';
-  import { type TaskItem } from '../stores/task.store';
+  import { type TaskItem, type GroupedTasks, taskStore } from '../stores/task.store';
   import { TaskDisplayMode } from '../types/tasks';
   import TaskItemComponent from './task-item.svelte';
 
@@ -10,17 +10,12 @@
     i18n: I18N;
     loading: boolean;
     error: string;
-    tasks: TaskItem[] | Record<string, { notebook: string; documents: Record<string, { docPath: string; tasks: TaskItem[] }> }>;
+    tasks: TaskItem[] | GroupedTasks;
     displayMode: TaskDisplayMode;
     onRefresh: () => void;
   }
 
   let { app, i18n, loading, error, tasks, displayMode, onRefresh }: Props = $props();
-
-  // Type guard for grouped tasks
-  function isGroupedTasks(tasks: TaskItem[] | Record<string, { notebook: string; documents: Record<string, { docPath: string; tasks: TaskItem[] }> }>): tasks is Record<string, { notebook: string; documents: Record<string, { docPath: string; tasks: TaskItem[] }> }> {
-    return !Array.isArray(tasks);
-  }
 </script>
 
 <div class="task-list-content">
@@ -35,23 +30,23 @@
       <button onclick={onRefresh}>Retry</button>
     </div>
   {:else if displayMode === TaskDisplayMode.ONLY_TASKS}
-    {#if !isGroupedTasks(tasks) && tasks.length === 0}
+    {#if !taskStore.isGroupedTasks(tasks) && tasks.length === 0}
       <div class="empty">
         <span>{i18n.noTasksFound || 'No tasks found'}</span>
       </div>
-    {:else if !isGroupedTasks(tasks)}
+    {:else if !taskStore.isGroupedTasks(tasks)}
       <div class="task-list">
         {#each tasks as task (task.id)}
-          <TaskItemComponent {app} {task} />
+          <TaskItemComponent {app} {task} showMeta={false} />
         {/each}
       </div>
     {/if}
   {:else}
-    {#if isGroupedTasks(tasks) && Object.keys(tasks).length === 0}
+    {#if taskStore.isGroupedTasks(tasks) && Object.keys(tasks).length === 0}
       <div class="empty">
         <span>{i18n.noTasksFound || 'No tasks found'}</span>
       </div>
-    {:else if isGroupedTasks(tasks)}
+    {:else if taskStore.isGroupedTasks(tasks)}
       <div class="task-list">
         {#each Object.entries(tasks) as [boxId, group] (boxId)}
           <div class="notebook-group">
@@ -66,14 +61,14 @@
                   </div>
                   <div class="document-tasks">
                     {#each docGroup.tasks as task (task.id)}
-                      <TaskItemComponent {app} {task} />
+                      <TaskItemComponent {app} {task} showMeta={true} />
                     {/each}
                   </div>
                 </div>
               {:else}
                 <div class="notebook-tasks">
                   {#each docGroup.tasks as task (task.id)}
-                    <TaskItemComponent {app} {task} />
+                    <TaskItemComponent {app} {task} showMeta={true} />
                   {/each}
                 </div>
               {/if}

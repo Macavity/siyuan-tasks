@@ -64,37 +64,9 @@
     return true;
   }));
 
-  // Group tasks by display mode
-  let groupedTasks = $derived(() => {
-    if (displayMode === TaskDisplayMode.ONLY_TASKS) {
-      return filteredTasks;
-    }
-    
-    // Group by notebook and optionally by document
-    const groups: Record<string, { notebook: string; documents: Record<string, { docPath: string; tasks: TaskItem[] }> }> = {};
-    
-    for (const task of filteredTasks) {
-      if (!groups[task.box]) {
-        groups[task.box] = {
-          notebook: task.boxName,
-          documents: {}
-        };
-      }
-      
-      const docKey = displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS ? task.root_id : 'all';
-      const docPath = displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS ? (task.docPath || 'Unknown Document') : '';
-      
-      if (!groups[task.box].documents[docKey]) {
-        groups[task.box].documents[docKey] = {
-          docPath,
-          tasks: []
-        };
-      }
-      
-      groups[task.box].documents[docKey].tasks.push(task);
-    }
-    
-    return groups;
+  // Get tasks in the appropriate display mode
+  let displayTasks = $derived(() => {
+    return taskStore.getTasksForDisplayMode(filteredTasks, displayMode);
   });
 
   let taskCounts = $derived({
@@ -172,7 +144,7 @@
     {i18n}
     {loading}
     {error}
-    tasks={groupedTasks()}
+    tasks={displayTasks()}
     {displayMode}
     onRefresh={refreshData}
   />

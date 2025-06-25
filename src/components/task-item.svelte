@@ -6,9 +6,10 @@
   interface Props {
     app: App;
     task: TaskItem;
+    showMeta?: boolean;
   }
 
-  let { app, task }: Props = $props();
+  let { app, task, showMeta = true }: Props = $props();
 
   function handleTaskClick() {
     if (task.root_id) {
@@ -51,9 +52,11 @@
   </div>
   <div class="task-content">
     <div class="task-text">{getTaskText()}</div>
-    <div class="task-meta">
-      {task.boxName} / {task.docPath}
-    </div>
+    {#if showMeta}
+      <div class="task-meta">
+        {task.boxName} / {task.docPath}
+      </div>
+    {/if}
   </div>
 </button>
 

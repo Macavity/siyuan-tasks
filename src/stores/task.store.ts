@@ -45,6 +45,18 @@ export interface TaskState {
   notebooksCache: Notebook[];
 }
 
+export interface GroupedTasks {
+  [boxId: string]: {
+    notebook: string;
+    documents: {
+      [docId: string]: {
+        docPath: string;
+        tasks: TaskItem[];
+      };
+    };
+  };
+}
+
 function createTaskStore() {
   const initialState: TaskState = {
     tasks: [],
@@ -192,6 +204,53 @@ function createTaskStore() {
       // This will be called from the plugin context where we have access to settings
       // For now, return the default value
       return TaskDisplayMode.ONLY_TASKS;
+    },
+
+    // Computed methods for different display modes
+    getTasksForDisplayMode(
+      tasks: TaskItem[],
+      displayMode: TaskDisplayMode
+    ): TaskItem[] | GroupedTasks {
+      if (displayMode === TaskDisplayMode.ONLY_TASKS) {
+        return tasks;
+      }
+
+      // Group by notebook and optionally by document
+      const groups: GroupedTasks = {};
+
+      for (const task of tasks) {
+        if (!groups[task.box]) {
+          groups[task.box] = {
+            notebook: task.boxName,
+            documents: {},
+          };
+        }
+
+        const docKey =
+          displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS
+            ? task.root_id
+            : "all";
+        const docPath =
+          displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS
+            ? task.docPath || "Unknown Document"
+            : "";
+
+        if (!groups[task.box].documents[docKey]) {
+          groups[task.box].documents[docKey] = {
+            docPath,
+            tasks: [],
+          };
+        }
+
+        groups[task.box].documents[docKey].tasks.push(task);
+      }
+
+      return groups;
+    },
+
+    // Helper method to check if tasks are grouped
+    isGroupedTasks(tasks: TaskItem[] | GroupedTasks): tasks is GroupedTasks {
+      return !Array.isArray(tasks);
     },
   };
 }
