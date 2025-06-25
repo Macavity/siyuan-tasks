@@ -39,6 +39,7 @@
     gap: 4px;
     margin-bottom: 12px;
     padding: 0 12px;
+    box-sizing: border-box;
   }
 
   .tab-btn {
@@ -51,6 +52,8 @@
     border-radius: 4px;
     font-size: 12px;
     text-align: center;
+    box-sizing: border-box;
+    min-width: 0;
   }
 
   .tab-btn.active {

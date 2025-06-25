@@ -4,6 +4,7 @@
   import { type I18N } from '../types/i18n';
   import { taskStore, type TaskItem } from '../stores/task.store';
   import { TaskRange, TaskStatus, TaskDisplayMode } from '../types/tasks';
+  import { filterStateService, type FilterState } from '../libs/filter-state.service';
   import TaskHeader from './task-header.svelte';
   import RangeTabs from './range-tabs.svelte';
   import TaskSearch from './task-search.svelte';
@@ -37,6 +38,17 @@
     currentDocInfo = state.currentDocInfo;
     currentBoxInfo = state.currentBoxInfo;
   });
+
+  // Save filter state
+  function saveFilterState() {
+    const state: FilterState = {
+      range: currentRange,
+      status: taskStatus,
+      displayMode: displayMode,
+      timestamp: Date.now()
+    };
+    filterStateService.saveFilterState(state);
+  }
 
   // Computed
   let filteredTasks = $derived(tasks.filter(task => {
@@ -98,6 +110,7 @@
     const nextIndex = (currentIndex + 1) % statusOrder.length;
     taskStatus = statusOrder[nextIndex];
     taskStore.fetchTasks(currentRange, taskStatus);
+    saveFilterState();
   }
 
   function refreshData() {
@@ -107,6 +120,7 @@
   function handleRangeChange(range: TaskRange) {
     currentRange = range;
     taskStore.fetchTasks(currentRange, taskStatus);
+    saveFilterState();
   }
 
   function handleSearchChange(value: string) {
@@ -115,12 +129,22 @@
 
   // Lifecycle
   onMount(() => {
-    // Initial data fetch
+    // Load saved filter state
+    const savedState = filterStateService.loadSavedFilter();
+    currentRange = savedState.range;
+    taskStatus = savedState.status;
+    displayMode = savedState.displayMode;
+    
+    // If no document is open and no saved state, default to workspace filter
+    if (!currentDocInfo.rootID && !filterStateService.hasSavedState()) {
+      currentRange = TaskRange.WORKSPACE;
+    }
+    
     taskStore.fetchTasks(currentRange, taskStatus);
   });
 </script>
 
-<div class="plugin-task-list-wrap">
+<div class="sy-plugin-tasks">
   <TaskHeader 
     {i18n}
     {taskStatus}
@@ -155,10 +179,12 @@
 </div>
 
 <style>
-  .plugin-task-list-wrap {
+  .sy-plugin-tasks {
     display: flex;
     flex-direction: column;
     height: 100%;
     font-family: var(--b3-font-family);
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 </style> 

@@ -2,7 +2,6 @@
   import { type I18N } from '../types/i18n';
   import { TaskStatus } from '../types/tasks';
   import Button from './ui/button.svelte';
-  import Icon from './ui/icon.svelte';
 
   interface Props {
     i18n: I18N;
@@ -23,11 +22,13 @@
   };
 </script>
 
-<div class="head-wrap">
-  <div class="title">
+<div class="task-header">
+  <div class="task-header__title">
     <div class="title-text">
       <h3>
-        <Icon icon="iconTasksDock" class="icon"/>
+        <svg class="icon" style="margin-right: 5px">
+          <use xlink:href="#tasksDockIcon"></use>
+        </svg>
         {i18n.pluginTitle || 'Task List'}
         <button 
           class="task-status" 
@@ -51,12 +52,11 @@
 </div>
 
 <style>
-  .head-wrap {
-    padding: 12px;
-    border-bottom: 1px solid var(--b3-border-color);
+  .task-header {
+    padding: 12px 12px 0px 12px;
   }
 
-  .title {
+  .task-header__title {
     display: flex;
     justify-content: space-between;
     align-items: center;

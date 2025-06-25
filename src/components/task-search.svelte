@@ -24,6 +24,7 @@
   .search-wrap {
     margin-bottom: 8px;
     padding: 0 12px;
+    box-sizing: border-box;
   }
 
   .search-input {
@@ -34,6 +35,8 @@
     background: var(--b3-theme-surface);
     color: var(--b3-theme-on-surface);
     font-size: 14px;
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
   .search-input:focus {
