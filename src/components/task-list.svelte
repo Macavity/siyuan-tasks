@@ -81,16 +81,18 @@
     const currentIndex = statusOrder.indexOf(taskStatus);
     const nextIndex = (currentIndex + 1) % statusOrder.length;
     taskStatus = statusOrder[nextIndex];
+    taskStore.setCurrentStatus(taskStatus);
     taskStore.fetchTasks(currentRange, taskStatus);
     saveFilterState();
   }
 
   function refreshData() {
-    taskStore.fetchTasks(currentRange, taskStatus);
+    taskStore.refreshTasksIfNeeded();
   }
 
   function handleRangeChange(range: TaskRange) {
     currentRange = range;
+    taskStore.setCurrentRange(range);
     taskStore.fetchTasks(currentRange, taskStatus);
     saveFilterState();
   }
@@ -107,9 +109,14 @@
     taskStatus = savedState.status;
     displayMode = savedState.displayMode;
     
+    // Sync the store's filter state
+    taskStore.setCurrentRange(currentRange);
+    taskStore.setCurrentStatus(taskStatus);
+    
     // If no document is open and no saved state, default to workspace filter
     if (!currentDocInfo.rootID && !filterStateService.hasSavedState()) {
       currentRange = TaskRange.WORKSPACE;
+      taskStore.setCurrentRange(currentRange);
     }
     
     taskStore.fetchTasks(currentRange, taskStatus);

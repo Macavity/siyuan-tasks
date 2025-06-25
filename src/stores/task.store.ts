@@ -43,6 +43,8 @@ export interface TaskState {
   currentDocInfo: DocInfo;
   currentBoxInfo: BoxInfo;
   notebooksCache: Notebook[];
+  currentRange: TaskRange;
+  currentStatus: TaskStatus;
 }
 
 export interface GroupedTasks {
@@ -65,6 +67,8 @@ function createTaskStore() {
     currentDocInfo: { id: "", rootID: "", name: "" },
     currentBoxInfo: { box: "", name: "" },
     notebooksCache: [],
+    currentRange: TaskRange.WORKSPACE,
+    currentStatus: TaskStatus.ALL,
   };
 
   const { subscribe, set, update } = writable<TaskState>(initialState);
@@ -85,6 +89,10 @@ function createTaskStore() {
       update((state) => ({ ...state, currentBoxInfo: boxInfo })),
     setNotebooksCache: (notebooks: Notebook[]) =>
       update((state) => ({ ...state, notebooksCache: notebooks })),
+    setCurrentRange: (range: TaskRange) =>
+      update((state) => ({ ...state, currentRange: range })),
+    setCurrentStatus: (status: TaskStatus) =>
+      update((state) => ({ ...state, currentStatus: status })),
 
     // Complex actions
     async fetchTasks(range: TaskRange, status: TaskStatus) {
@@ -199,11 +207,59 @@ function createTaskStore() {
       return state!.currentBoxInfo;
     },
 
-    // Get current display mode setting
-    getDisplayMode(): TaskDisplayMode {
-      // This will be called from the plugin context where we have access to settings
-      // For now, return the default value
-      return TaskDisplayMode.ONLY_TASKS;
+    // Get current filter state
+    getCurrentFilterState(): { range: TaskRange; status: TaskStatus } {
+      let state: TaskState;
+      subscribe((s) => (state = s))();
+      return {
+        range: state!.currentRange,
+        status: state!.currentStatus,
+      };
+    },
+
+    // Smart refresh that only updates if something changed
+    async refreshTasksIfNeeded(): Promise<void> {
+      let state: TaskState;
+      subscribe((s) => (state = s))();
+
+      const currentState = state!;
+
+      // Fetch fresh data from backend with current filter settings
+      const freshTasks = await this.fetchTasksInternal(
+        currentState.currentRange,
+        currentState.currentStatus
+      );
+
+      // Compare fresh data with current tasks
+      if (this.hasTasksChanged(currentState.tasks, freshTasks)) {
+        // Only update store if data has actually changed
+        this.setTasks(freshTasks);
+      }
+    },
+
+    // Compare two task arrays to see if they've changed
+    hasTasksChanged(currentTasks: TaskItem[], newTasks: TaskItem[]): boolean {
+      // Quick length check
+      if (currentTasks.length !== newTasks.length) {
+        return true;
+      }
+
+      // Compare each task by ID and key properties
+      for (let i = 0; i < currentTasks.length; i++) {
+        const current = currentTasks[i];
+        const newTask = newTasks[i];
+
+        if (
+          current.id !== newTask.id ||
+          current.markdown !== newTask.markdown ||
+          current.status !== newTask.status ||
+          current.updated !== newTask.updated
+        ) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     // Computed methods for different display modes
@@ -248,9 +304,67 @@ function createTaskStore() {
       return groups;
     },
 
-    // Helper method to check if tasks are grouped
-    isGroupedTasks(tasks: TaskItem[] | GroupedTasks): tasks is GroupedTasks {
-      return !Array.isArray(tasks);
+    // Internal method to fetch tasks without updating store
+    async fetchTasksInternal(
+      range: TaskRange,
+      status: TaskStatus
+    ): Promise<TaskItem[]> {
+      try {
+        let sqlQuery =
+          "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
+
+        if (range === TaskRange.DOC && this.getCurrentDocInfo()?.rootID) {
+          sqlQuery += ` AND root_id = '${this.getCurrentDocInfo().rootID}'`;
+        } else if (range === TaskRange.BOX && this.getCurrentBoxInfo()?.box) {
+          sqlQuery += ` AND box = '${this.getCurrentBoxInfo().box}'`;
+        }
+
+        sqlQuery += " ORDER BY created ASC LIMIT 2000";
+
+        const tasksResult = await sql(sqlQuery);
+        if (!tasksResult || tasksResult.length === 0) {
+          return [];
+        }
+
+        // Filtering by markdown prefix
+        function isTodo(markdown: string) {
+          return /^-\s*\[ \]/.test(markdown);
+        }
+        function isDone(markdown: string) {
+          return /^-\s*\[[xX]\]/.test(markdown);
+        }
+
+        const filtered = tasksResult.filter((task) => {
+          if (status === TaskStatus.TODO) return isTodo(task.markdown);
+          if (status === TaskStatus.DONE) return isDone(task.markdown);
+          return isTodo(task.markdown) || isDone(task.markdown);
+        });
+
+        // Process tasks and add metadata
+        const processedTasks: TaskItem[] = [];
+        for (const task of filtered) {
+          const notebookName = await this.getNotebookName(task.box);
+          const docPath = await this.getDocumentHPath(task.root_id);
+          const taskStatus: TaskStatus = isTodo(task.markdown)
+            ? TaskStatus.TODO
+            : isDone(task.markdown)
+              ? TaskStatus.DONE
+              : TaskStatus.ALL;
+          processedTasks.push({
+            ...task,
+            boxName: notebookName,
+            docPath: docPath,
+            status: taskStatus,
+          });
+        }
+
+        return processedTasks;
+      } catch (err) {
+        const errorObj = err as Error;
+        console.error("Error fetching tasks:", errorObj);
+        this.setError(errorObj.message || "Unknown error");
+        return [];
+      }
     },
   };
 }

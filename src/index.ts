@@ -15,7 +15,7 @@ import { icons } from "./libs/icons";
 import { i18nStore } from "./stores/i18n.store";
 import { taskStore } from "./stores/task.store";
 import { type I18N } from "./types/i18n";
-import { TaskRange, TaskStatus, TaskDisplayMode } from "./types/tasks";
+import { TaskDisplayMode } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
 
@@ -60,7 +60,7 @@ export default class TaskListPlugin extends Plugin {
       callback: (data) => {
         // Settings changed, refresh tasks if needed
         console.log("Settings updated:", data);
-        taskStore.fetchTasks(TaskRange.DOC, TaskStatus.ALL);
+        taskStore.refreshTasksIfNeeded();
       },
     });
 
@@ -158,6 +158,7 @@ export default class TaskListPlugin extends Plugin {
 
     // Set up event listeners for document and notebook changes
     this.eventBus.on(SiyuanEvents.SWITCH_PROTYLE, (e: TEventSwitchProtyle) => {
+      console.log("Switched to document:", e.detail.protyle.block.rootID);
       // Update current document and notebook info in the store
       if (e.detail?.protyle?.block?.rootID) {
         const docInfo = {
@@ -177,8 +178,9 @@ export default class TaskListPlugin extends Plugin {
         console.log("Switched to notebook:", e.detail.protyle.notebookId);
       }
 
-      // Refresh tasks when switching documents/notebooks
-      taskStore.fetchTasks(TaskRange.DOC, TaskStatus.ALL);
+      // Refresh tasks while preserving the current filter level
+      // Use the smart refresh function that only updates if needed
+      taskStore.refreshTasksIfNeeded();
     });
   }
 
