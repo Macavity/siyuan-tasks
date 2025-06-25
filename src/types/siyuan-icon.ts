@@ -1,4 +1,6 @@
 export type SiYuanIcon =
+  | "iconTasksDock"
+  // Default icons
   | "iconTerminal"
   | "iconCamera"
   | "iconLinkOff"

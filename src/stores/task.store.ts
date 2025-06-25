@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { lsNotebooks, getHPathByID, sql } from "../api";
-import { TaskRange, TaskStatus } from "../types/tasks";
+import { TaskRange, TaskStatus, TaskDisplayMode } from "../types/tasks";
 
 export interface TaskItem {
   id: string;
@@ -185,6 +185,13 @@ function createTaskStore() {
       let state: TaskState;
       subscribe((s) => (state = s))();
       return state!.currentBoxInfo;
+    },
+
+    // Get current display mode setting
+    getDisplayMode(): TaskDisplayMode {
+      // This will be called from the plugin context where we have access to settings
+      // For now, return the default value
+      return TaskDisplayMode.ONLY_TASKS;
     },
   };
 }

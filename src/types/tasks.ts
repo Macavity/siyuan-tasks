@@ -9,3 +9,9 @@ export enum TaskStatus {
   TODO = "todo",
   DONE = "done",
 }
+
+export enum TaskDisplayMode {
+  ONLY_TASKS = "only_tasks",
+  NOTEBOOK_DOCUMENT_TASKS = "notebook_document_tasks",
+  NOTEBOOK_TASKS = "notebook_tasks",
+}

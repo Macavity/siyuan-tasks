@@ -15,7 +15,7 @@ import { icons } from "./libs/icons";
 import { i18nStore } from "./stores/i18n.store";
 import { taskStore } from "./stores/task.store";
 import { type I18N } from "./types/i18n";
-import { TaskRange, TaskStatus } from "./types/tasks";
+import { TaskRange, TaskStatus, TaskDisplayMode } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
 
@@ -107,6 +107,19 @@ export default class TaskListPlugin extends Plugin {
         created: "Created date",
         updated: "Updated date",
         content: "Content",
+      },
+    });
+
+    this.settingUtils.addItem({
+      key: "displayMode",
+      value: TaskDisplayMode.ONLY_TASKS,
+      type: "select",
+      title: "Task List Display Mode",
+      description: "How to display tasks in the list",
+      options: {
+        [TaskDisplayMode.ONLY_TASKS]: "Only Tasks",
+        [TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS]: "Notebook, Document, Tasks",
+        [TaskDisplayMode.NOTEBOOK_TASKS]: "Notebook, Tasks",
       },
     });
 

@@ -3,7 +3,7 @@
   import { type App } from 'siyuan';
   import { type I18N } from '../types/i18n';
   import { taskStore, type TaskItem } from '../stores/task.store';
-  import { TaskRange, TaskStatus } from '../types/tasks';
+  import { TaskRange, TaskStatus, TaskDisplayMode } from '../types/tasks';
   import TaskHeader from './task-header.svelte';
   import RangeTabs from './range-tabs.svelte';
   import TaskSearch from './task-search.svelte';
@@ -21,6 +21,7 @@
   let taskStatus = $state<TaskStatus>(TaskStatus.ALL);
   let searchText = $state('');
   let isExpanded = $state(true);
+  let displayMode = $state<TaskDisplayMode>(TaskDisplayMode.ONLY_TASKS);
 
   // Subscribe to store
   let tasks = $state<TaskItem[]>([]);
@@ -50,6 +51,39 @@
     }
     return true;
   }));
+
+  // Group tasks by display mode
+  let groupedTasks = $derived(() => {
+    if (displayMode === TaskDisplayMode.ONLY_TASKS) {
+      return filteredTasks;
+    }
+    
+    // Group by notebook and optionally by document
+    const groups: Record<string, { notebook: string; documents: Record<string, { docPath: string; tasks: TaskItem[] }> }> = {};
+    
+    for (const task of filteredTasks) {
+      if (!groups[task.box]) {
+        groups[task.box] = {
+          notebook: task.boxName,
+          documents: {}
+        };
+      }
+      
+      const docKey = displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS ? task.root_id : 'all';
+      const docPath = displayMode === TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS ? (task.docPath || 'Unknown Document') : '';
+      
+      if (!groups[task.box].documents[docKey]) {
+        groups[task.box].documents[docKey] = {
+          docPath,
+          tasks: []
+        };
+      }
+      
+      groups[task.box].documents[docKey].tasks.push(task);
+    }
+    
+    return groups;
+  });
 
   let taskCounts = $derived({
     doc: tasks.filter(t => t.root_id === currentDocInfo.rootID).length,
@@ -114,7 +148,8 @@
     {i18n}
     {loading}
     {error}
-    tasks={filteredTasks}
+    tasks={groupedTasks()}
+    {displayMode}
     onRefresh={refreshData}
   />
 </div>

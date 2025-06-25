@@ -1,6 +1,8 @@
 <script lang="ts">
   import { type I18N } from '../types/i18n';
   import { TaskStatus } from '../types/tasks';
+  import Button from './ui/button.svelte';
+  import Icon from './ui/icon.svelte';
 
   interface Props {
     i18n: I18N;
@@ -25,9 +27,7 @@
   <div class="title">
     <div class="title-text">
       <h3>
-        <svg class="icon" style="margin-right: 5px">
-          <use xlink:href="#tasksDockIcon"></use>
-        </svg>
+        <Icon icon="iconTasksDock" class="icon"/>
         {i18n.pluginTitle || 'Task List'}
         <button 
           class="task-status" 
@@ -41,23 +41,11 @@
     </div>
     
     <div class="btn-list">
-      <button class="btn-icon" onclick={onRefresh} title={i18n.options?.refresh || 'Refresh'} aria-label="Refresh tasks">
-        <svg class="icon">
-          <use xlink:href="#iconRefresh"></use>
-        </svg>
-      </button>
+      <Button icon="iconRefresh" on:click={onRefresh} tooltip={i18n.options?.refresh || 'Refresh'}/>
       
-      <button class="btn-icon" onclick={onToggleExpanded} title={isExpanded ? 'Collapse' : 'Expand'} aria-label={isExpanded ? 'Collapse' : 'Expand'}>
-        <svg class="icon">
-          <use xlink:href={isExpanded ? '#iconMin' : '#iconMax'}></use>
-        </svg>
-      </button>
+      <Button icon={isExpanded ? 'iconContract' : 'iconExpand'} on:click={onToggleExpanded} tooltip={isExpanded ? 'Collapse' : 'Expand'}/>
       
-      <button class="btn-icon" onclick={onToggleStatus} title={i18n.options?.switch || 'Switch Status'} aria-label="Switch task status">
-        <svg class="icon">
-          <use xlink:href="#iconRepeat"></use>
-        </svg>
-      </button>
+      <Button icon="iconSoftWrap" on:click={onToggleStatus} tooltip={i18n.options?.switch || 'Switch Status'}/>
     </div>
   </div>
 </div>
@@ -96,23 +84,5 @@
   .btn-list {
     display: flex;
     gap: 8px;
-  }
-
-  .btn-icon {
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    border-radius: 4px;
-    color: var(--b3-theme-on-surface);
-  }
-
-  .btn-icon:hover {
-    background-color: var(--b3-theme-surface-hover);
-  }
-
-  .icon {
-    width: 16px;
-    height: 16px;
   }
 </style> 
