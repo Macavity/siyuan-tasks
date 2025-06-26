@@ -27,5 +27,30 @@
     "box": "笔记本",
     "workspace": "工作空间"
   },
-  "searchPlaceholder": "搜索任务..."
+  "searchPlaceholder": "搜索任务...",
+  "setting": {
+    "title": "设置",
+    "autoRefresh": "自动刷新任务",
+    "autoRefreshDesc": "切换文档时自动刷新任务",
+    "refreshInterval": "刷新间隔（秒）",
+    "refreshIntervalDesc": "自动刷新任务的频率",
+    "showCompleted": "显示已完成任务",
+    "showCompletedDesc": "在任务列表中包含已完成的任务",
+    "maxTasks": "最大任务显示数量",
+    "maxTasksDesc": "加载和显示的最大任务数量",
+    "sortBy": "排序方式",
+    "sortByDesc": "任务列表的排序方式",
+    "sortOptions": {
+      "created": "创建日期",
+      "updated": "更新日期",
+      "content": "内容"
+    },
+    "displayMode": "任务列表显示模式",
+    "displayModeDesc": "任务列表的显示方式",
+    "displayOptions": {
+      "onlyTasks": "仅任务",
+      "notebookDocumentTasks": "笔记本、文档、任务",
+      "notebookTasks": "笔记本、任务"
+    }
+  }
 }

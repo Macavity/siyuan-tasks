@@ -108,61 +108,58 @@ export default class TaskListPlugin extends Plugin {
   }
 
   private initialiseSettings() {
-    // Initialize settings
     this.settingUtils = new SettingUtils({
       plugin: this,
       name: STORAGE_NAME,
-      callback: (data) => {
+      callback: (/* data */) => {
         // Settings changed, refresh tasks if needed
-        Logger.info("Settings updated:", data);
         this.updateStoreFromSettingUtils();
         taskStore.refreshTasksIfNeeded(true);
       },
     });
 
-    // Add settings items
     this.settingUtils.addItem({
       key: PluginSetting.AutoRefresh,
       value: true,
       type: "checkbox",
-      title: "Auto refresh tasks",
-      description: "Automatically refresh tasks when switching documents",
+      title: this.t.setting.autoRefresh,
+      description: this.t.setting.autoRefreshDesc,
     });
 
     this.settingUtils.addItem({
       key: PluginSetting.RefreshInterval,
       value: 30,
       type: "number",
-      title: "Refresh interval (seconds)",
-      description: "How often to refresh tasks automatically",
+      title: this.t.setting.refreshInterval,
+      description: this.t.setting.refreshIntervalDesc,
     });
 
     this.settingUtils.addItem({
       key: PluginSetting.ShowCompleted,
       value: true,
       type: "checkbox",
-      title: "Show completed tasks",
-      description: "Include completed tasks in the task list",
+      title: this.t.setting.showCompleted,
+      description: this.t.setting.showCompletedDesc,
     });
 
     // this.settingUtils.addItem({
     //   key: PluginSetting.MaxTasks,
     //   value: 100,
     //   type: "number",
-    //   title: "Maximum tasks to display",
-    //   description: "Maximum number of tasks to load and display",
+    //   title: this.t.setting.maxTasks,
+    //   description: this.t.setting.maxTasksDesc,
     // });
 
     this.settingUtils.addItem({
       key: PluginSetting.SortBy,
       value: "created",
       type: "select",
-      title: "Sort by",
-      description: "How to sort tasks in the list",
+      title: this.t.setting.sortBy,
+      description: this.t.setting.sortByDesc,
       options: {
-        created: "Created date",
-        updated: "Updated date",
-        content: "Content",
+        created: this.t.setting.sortOptions.created,
+        updated: this.t.setting.sortOptions.updated,
+        content: this.t.setting.sortOptions.content,
       },
     });
 
@@ -170,12 +167,12 @@ export default class TaskListPlugin extends Plugin {
     //   key: PluginSetting.DisplayMode,
     //   value: TaskDisplayMode.ONLY_TASKS,
     //   type: "select",
-    //   title: "Task List Display Mode",
-    //   description: "How to display tasks in the list",
+    //   title: this.t.setting.displayMode,
+    //   description: this.t.setting.displayModeDesc,
     //   options: {
-    //     [TaskDisplayMode.ONLY_TASKS]: "Only Tasks",
-    //     [TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS]: "Notebook, Document, Tasks",
-    //     [TaskDisplayMode.NOTEBOOK_TASKS]: "Notebook, Tasks",
+    //     [TaskDisplayMode.ONLY_TASKS]: this.t.setting.displayOptions.onlyTasks,
+    //     [TaskDisplayMode.NOTEBOOK_DOCUMENT_TASKS]: this.t.setting.displayOptions.notebookDocumentTasks,
+    //     [TaskDisplayMode.NOTEBOOK_TASKS]: this.t.setting.displayOptions.notebookTasks,
     //   },
     // });
   }
@@ -206,5 +203,9 @@ export default class TaskListPlugin extends Plugin {
 
   uninstall() {
     // console.log("uninstall");
+  }
+
+  private get t(): I18N {
+    return this.i18n as unknown as I18N;
   }
 }

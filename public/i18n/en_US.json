@@ -29,6 +29,28 @@
   },
   "searchPlaceholder": "Search tasks...",
   "setting": {
-    "title": "Settings"
+    "title": "Settings",
+    "autoRefresh": "Auto refresh tasks",
+    "autoRefreshDesc": "Automatically refresh tasks when switching documents",
+    "refreshInterval": "Refresh interval (seconds)",
+    "refreshIntervalDesc": "How often to refresh tasks automatically",
+    "showCompleted": "Show completed tasks",
+    "showCompletedDesc": "Include completed tasks in the task list",
+    "maxTasks": "Maximum tasks to display",
+    "maxTasksDesc": "Maximum number of tasks to load and display",
+    "sortBy": "Sort by",
+    "sortByDesc": "How to sort tasks in the list",
+    "sortOptions": {
+      "created": "Created date",
+      "updated": "Updated date",
+      "content": "Content"
+    },
+    "displayMode": "Task List Display Mode",
+    "displayModeDesc": "How to display tasks in the list",
+    "displayOptions": {
+      "onlyTasks": "Only Tasks",
+      "notebookDocumentTasks": "Notebook, Document, Tasks",
+      "notebookTasks": "Notebook, Tasks"
+    }
   }
 }
