@@ -1,7 +1,8 @@
 <script lang="ts">
   import { type App, openTab } from 'siyuan';
   import { type TaskItem } from '../stores/task.store';
-  import { TaskStatus } from '../types/tasks';
+  import { TaskStatus, TaskPriority } from '../types/tasks';
+  import { TaskAnalysisService } from '../services/task-analysis.service';
 
   interface Props {
     app: App;
@@ -24,9 +25,7 @@
   }
 
   function getTaskText(): string {
-    let taskText = task.markdown || task.content || '';
-    // Remove any markdown task prefix (e.g., '- [ ]', '- [x]', '- [X]', '* [ ]', etc.)
-    taskText = taskText.replace(/^\s*[-*]\s*\[[ xX]\]\s*/, '').trim();
+    let taskText = TaskAnalysisService.extractTaskText(task.markdown || task.content || '');
     if (taskText.length > 100) {
       taskText = taskText.substring(0, 100) + '...';
     }
@@ -34,6 +33,20 @@
       taskText = 'Untitled Task (click to view)';
     }
     return taskText;
+  }
+
+  function getPriorityIconId(): string | null {
+    switch (task.priority) {
+      case TaskPriority.URGENT:
+        return 'priorityUrgent';
+      case TaskPriority.HIGH:
+        return 'priorityHigh';
+      case TaskPriority.LOW:
+        return 'priorityLow';
+      case TaskPriority.NORMAL:
+      default:
+        return null;
+    }
   }
 </script>
 
@@ -51,7 +64,14 @@
     />
   </div>
   <div class="task-content">
-    <div class="task-text">{getTaskText()}</div>
+    <div class="task-text">
+      {#if getPriorityIconId()}
+        <svg class="priority-icon" width="16" height="16">
+          <use href="#{getPriorityIconId()}" />
+        </svg>
+      {/if}
+      {getTaskText()}
+    </div>
     {#if showMeta}
       <div class="task-meta">
         {task.boxName} / {task.docPath}
@@ -97,6 +117,13 @@
     line-height: 1.4;
     margin-bottom: 4px;
     word-break: break-word;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .priority-icon {
+    flex-shrink: 0;
   }
 
   .task-meta {

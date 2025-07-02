@@ -1,6 +1,12 @@
 import { writable } from "svelte/store";
 import { lsNotebooks, getHPathByID, sql } from "../api";
-import { TaskRange, TaskStatus, TaskDisplayMode } from "../types/tasks";
+import {
+  TaskRange,
+  TaskStatus,
+  TaskDisplayMode,
+  TaskPriority,
+} from "../types/tasks";
+import { TaskAnalysisService } from "../services/task-analysis.service";
 
 export interface TaskItem {
   id: string;
@@ -15,6 +21,7 @@ export interface TaskItem {
   type: string;
   subtype: string;
   status: TaskStatus.TODO | TaskStatus.DONE;
+  priority: TaskPriority;
   docPath?: string;
 }
 
@@ -115,18 +122,15 @@ function createTaskStore() {
           return;
         }
 
-        // Filtering by markdown prefix
-        function isTodo(markdown: string) {
-          return /^-\s*\[ \]/.test(markdown);
-        }
-        function isDone(markdown: string) {
-          return /^-\s*\[[xX]\]/.test(markdown);
-        }
-
         const filtered = tasksResult.filter((task) => {
-          if (status === TaskStatus.TODO) return isTodo(task.markdown);
-          if (status === TaskStatus.DONE) return isDone(task.markdown);
-          return isTodo(task.markdown) || isDone(task.markdown);
+          if (status === TaskStatus.TODO)
+            return TaskAnalysisService.isTodo(task.markdown);
+          if (status === TaskStatus.DONE)
+            return TaskAnalysisService.isDone(task.markdown);
+          return (
+            TaskAnalysisService.isTodo(task.markdown) ||
+            TaskAnalysisService.isDone(task.markdown)
+          );
         });
 
         // Process tasks and add metadata
@@ -134,16 +138,20 @@ function createTaskStore() {
         for (const task of filtered) {
           const notebookName = await this.getNotebookName(task.box);
           const docPath = await this.getDocumentHPath(task.root_id);
-          const taskStatus: TaskStatus = isTodo(task.markdown)
+          const taskStatus: TaskStatus = TaskAnalysisService.isTodo(
+            task.markdown
+          )
             ? TaskStatus.TODO
-            : isDone(task.markdown)
+            : TaskAnalysisService.isDone(task.markdown)
               ? TaskStatus.DONE
               : TaskStatus.ALL;
+          const priority = TaskAnalysisService.detectPriority(task.markdown);
           processedTasks.push({
             ...task,
             boxName: notebookName,
             docPath: docPath,
             status: taskStatus,
+            priority: priority,
           });
         }
 
@@ -257,6 +265,7 @@ function createTaskStore() {
           current.id !== newTask.id ||
           current.markdown !== newTask.markdown ||
           current.status !== newTask.status ||
+          current.priority !== newTask.priority ||
           current.updated !== newTask.updated
         ) {
           return true;
@@ -330,18 +339,15 @@ function createTaskStore() {
           return [];
         }
 
-        // Filtering by markdown prefix
-        function isTodo(markdown: string) {
-          return /^-\s*\[ \]/.test(markdown);
-        }
-        function isDone(markdown: string) {
-          return /^-\s*\[[xX]\]/.test(markdown);
-        }
-
         const filtered = tasksResult.filter((task) => {
-          if (status === TaskStatus.TODO) return isTodo(task.markdown);
-          if (status === TaskStatus.DONE) return isDone(task.markdown);
-          return isTodo(task.markdown) || isDone(task.markdown);
+          if (status === TaskStatus.TODO)
+            return TaskAnalysisService.isTodo(task.markdown);
+          if (status === TaskStatus.DONE)
+            return TaskAnalysisService.isDone(task.markdown);
+          return (
+            TaskAnalysisService.isTodo(task.markdown) ||
+            TaskAnalysisService.isDone(task.markdown)
+          );
         });
 
         // Process tasks and add metadata
@@ -349,16 +355,20 @@ function createTaskStore() {
         for (const task of filtered) {
           const notebookName = await this.getNotebookName(task.box);
           const docPath = await this.getDocumentHPath(task.root_id);
-          const taskStatus: TaskStatus = isTodo(task.markdown)
+          const taskStatus: TaskStatus = TaskAnalysisService.isTodo(
+            task.markdown
+          )
             ? TaskStatus.TODO
-            : isDone(task.markdown)
+            : TaskAnalysisService.isDone(task.markdown)
               ? TaskStatus.DONE
               : TaskStatus.ALL;
+          const priority = TaskAnalysisService.detectPriority(task.markdown);
           processedTasks.push({
             ...task,
             boxName: notebookName,
             docPath: docPath,
             status: taskStatus,
+            priority: priority,
           });
         }
 
@@ -369,6 +379,59 @@ function createTaskStore() {
         this.setError(errorObj.message || "Unknown error");
         return [];
       }
+    },
+
+    // Get setting value from plugin (if available)
+    getSetting(key: string): unknown {
+      // This method can be used to get settings from the plugin instance
+      // For now, it returns undefined as the settings are handled at the component level
+      // In the future, we could pass the settingUtils instance to the store
+      return undefined;
+    },
+
+    // Sort tasks by different criteria
+    sortTasks(tasks: TaskItem[], sortBy: string): TaskItem[] {
+      const sortedTasks = [...tasks];
+
+      switch (sortBy) {
+        case "priority":
+          sortedTasks.sort((a, b) => {
+            const priorityOrder = {
+              [TaskPriority.URGENT]: 0,
+              [TaskPriority.HIGH]: 1,
+              [TaskPriority.NORMAL]: 2,
+              [TaskPriority.LOW]: 3,
+            };
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
+          });
+          break;
+        case "updated":
+          sortedTasks.sort(
+            (a, b) =>
+              new Date(b.updated).getTime() - new Date(a.updated).getTime()
+          );
+          break;
+        case "content":
+          sortedTasks.sort((a, b) => {
+            const textA = TaskAnalysisService.extractTaskText(
+              a.markdown
+            ).toLowerCase();
+            const textB = TaskAnalysisService.extractTaskText(
+              b.markdown
+            ).toLowerCase();
+            return textA.localeCompare(textB);
+          });
+          break;
+        case "created":
+        default:
+          sortedTasks.sort(
+            (a, b) =>
+              new Date(a.created).getTime() - new Date(b.created).getTime()
+          );
+          break;
+      }
+
+      return sortedTasks;
     },
   };
 }

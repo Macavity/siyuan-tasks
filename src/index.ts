@@ -11,8 +11,8 @@ import { type I18N } from "./types/i18n";
 import { TaskDisplayMode } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
-import { Logger } from "./services/logger.service";
 import { configStore, PluginSetting } from "./stores/config.store";
+import { Logger } from "./services/logger.service";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
@@ -71,7 +71,6 @@ export default class TaskListPlugin extends Plugin {
           props: {
             app: this.app,
             i18n: this.i18n as unknown as I18N,
-            settingUtils: this.settingUtils,
           },
         });
       },
@@ -90,7 +89,7 @@ export default class TaskListPlugin extends Plugin {
           name: "Current Document", // TODO: Get actual document name
         };
         taskStore.setCurrentDocInfo(docInfo);
-        Logger.debug("Switched to document:", e.detail.protyle.block.rootID);
+        // Logger.debug("Switched to document:", e.detail.protyle.block.rootID);
       }
       if (e.detail?.protyle?.notebookId) {
         const boxInfo = {
@@ -98,7 +97,7 @@ export default class TaskListPlugin extends Plugin {
           name: "Current Notebook", // TODO: Get actual notebook name
         };
         taskStore.setCurrentBoxInfo(boxInfo);
-        Logger.debug("Switched to notebook:", e.detail.protyle.notebookId);
+        // Logger.debug("Switched to notebook:", e.detail.protyle.notebookId);
       }
 
       // Refresh tasks while preserving the current filter level
@@ -160,6 +159,7 @@ export default class TaskListPlugin extends Plugin {
         created: this.t.setting.sortOptions.created,
         updated: this.t.setting.sortOptions.updated,
         content: this.t.setting.sortOptions.content,
+        priority: this.t.setting.sortOptions.priority,
       },
     });
 
@@ -178,7 +178,7 @@ export default class TaskListPlugin extends Plugin {
   }
 
   private updateStoreFromSettingUtils() {
-    configStore.set({
+    const newConfig = {
       autoRefresh: this.settingUtils.get(PluginSetting.AutoRefresh) as boolean,
       refreshInterval: this.settingUtils.get(
         PluginSetting.RefreshInterval
@@ -191,12 +191,38 @@ export default class TaskListPlugin extends Plugin {
       displayMode: this.settingUtils.get(
         PluginSetting.DisplayMode
       ) as TaskDisplayMode,
-    });
+      loading: false, // Settings are now loaded
+    };
+
+    Logger.debug("Updating config store with:", newConfig);
+    configStore.set(newConfig);
   }
 
   onLayoutReady() {
+    Logger.debug("onLayoutReady");
     this.loadData(STORAGE_NAME);
-    this.settingUtils.load();
+
+    // Load settings asynchronously
+    this.loadSettingsAsync();
+  }
+
+  private async loadSettingsAsync() {
+    try {
+      // Load settings first - await the async load
+      await this.settingUtils.load();
+
+      // Now update config store with loaded settings
+      this.updateStoreFromSettingUtils();
+
+      // Mark config as loaded
+      configStore.setLoading(false);
+
+      // Now that config is loaded, refresh tasks if needed
+      taskStore.refreshTasksIfNeeded();
+    } catch (error) {
+      Logger.error("Failed to load settings:", error);
+      configStore.setLoading(false);
+    }
   }
 
   async onunload() {}

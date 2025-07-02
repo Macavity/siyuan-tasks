@@ -5,21 +5,18 @@
   import { taskStore, type TaskItem } from '../stores/task.store';
   import { TaskRange, TaskStatus, TaskDisplayMode } from '../types/tasks';
   import { filterStateService, type FilterState } from '../libs/filter-state.service';
-  import { SettingUtils } from '../libs/setting-utils';
   import TaskHeader from './task-header.svelte';
   import RangeTabs from './range-tabs.svelte';
   import TaskSearch from './task-search.svelte';
   import TaskListContent from './task-list-content.svelte';
-  import { Logger } from '../services/logger.service';
-  import { configStore, PluginSetting } from '../stores/config.store';
+  import { configStore } from '../stores/config.store';
 
   interface Props {
     app: App;
     i18n: I18N;
-    settingUtils: SettingUtils;
   }
 
-  let { app, i18n, settingUtils }: Props = $props();
+  let { app, i18n }: Props = $props();
 
   // Local state for UI
   let currentRange = $state<TaskRange>(TaskRange.DOC);
@@ -34,6 +31,7 @@
   let error = $state('');
   let currentDocInfo = $state({ id: '', rootID: '', name: '' });
   let currentBoxInfo = $state({ box: '', name: '' });
+  let configLoading = $state(true);
 
   taskStore.subscribe(state => {
     tasks = state.tasks;
@@ -43,7 +41,20 @@
     currentBoxInfo = state.currentBoxInfo;
   });
 
+  configStore.subscribe(config => {
+    configLoading = config.loading;
+  });
+
   const configShowCompleted = $derived($configStore.showCompleted);
+  const configSortBy = $derived($configStore.sortBy);
+
+  // Debug logging
+  $effect(() => {
+    console.log("Config changed - showCompleted:", configShowCompleted, "sortBy:", configSortBy);
+  });
+
+  // Combined loading state
+  let isInitializing = $derived(configLoading);
 
   // Save filter state
   function saveFilterState() {
@@ -58,7 +69,6 @@
 
   // Computed
   let filteredTasks = $derived(tasks.filter(task => {
-    //Logger.debug("Filtering task:", task);
     // Filter by search text
     if (searchText && !task.markdown.toLowerCase().includes(searchText.toLowerCase())) {
       return false;
@@ -73,18 +83,25 @@
     }
     
     // Filter out completed tasks if showCompleted is false
-    Logger.debug("showCompleted:", configShowCompleted);
     if (!configShowCompleted && task.status === TaskStatus.DONE) {
-      Logger.debug("Filtering out completed task:", task);
+      console.log("Filtering out completed task:", task.markdown);
       return false;
     }
     
     return true;
   }));
 
+  // Sort filtered tasks
+  let sortedTasks = $derived(() => {
+    console.log("Sorting tasks by:", configSortBy, "Filtered count:", filteredTasks.length);
+    return taskStore.sortTasks(filteredTasks, configSortBy);
+  });
+
   // Get tasks in the appropriate display mode
   let displayTasks = $derived(() => {
-    return taskStore.getTasksForDisplayMode(filteredTasks, displayMode);
+    const tasks = taskStore.getTasksForDisplayMode(sortedTasks(), displayMode);
+    console.log("Display tasks:", tasks);
+    return tasks;
   });
 
   let taskCounts = $derived({
@@ -105,7 +122,6 @@
   }
 
   function refreshData() {
-    Logger.debug("Refreshing tasks");
     taskStore.refreshTasksIfNeeded(true);
   }
 
@@ -128,12 +144,6 @@
     taskStatus = savedState.status;
     displayMode = savedState.displayMode;
     
-    // Load initial settings
-    const settingValue = settingUtils.get('showCompleted');
-    if (settingValue !== undefined) {
-      showCompleted = settingValue as boolean;
-    }
-    
     // Sync the store's filter state
     taskStore.setCurrentRange(currentRange);
     taskStore.setCurrentStatus(taskStatus);
@@ -144,42 +154,50 @@
       taskStore.setCurrentRange(currentRange);
     }
     
-    taskStore.fetchTasks(currentRange, taskStatus);
+    // The plugin will handle initial task fetching after config is loaded
   });
+
 </script>
 
 <div class="sy-plugin-tasks">
-  <TaskHeader 
-    {i18n}
-    {taskStatus}
-    {isExpanded}
-    onToggleStatus={toggleTaskStatus}
-    onRefresh={refreshData}
-    onToggleExpanded={() => isExpanded = !isExpanded}
-  />
+  {#if isInitializing}
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading tasks...</div>
+    </div>
+  {:else}
+    <TaskHeader 
+      {i18n}
+      {taskStatus}
+      {isExpanded}
+      onToggleStatus={toggleTaskStatus}
+      onRefresh={refreshData}
+      onToggleExpanded={() => isExpanded = !isExpanded}
+    />
 
-  <RangeTabs 
-    {i18n}
-    {currentRange}
-    {taskCounts}
-    onRangeChange={handleRangeChange}
-  />
+    <RangeTabs 
+      {i18n}
+      {currentRange}
+      {taskCounts}
+      onRangeChange={handleRangeChange}
+    />
 
-  <TaskSearch 
-    {i18n}
-    {searchText}
-    onSearchChange={handleSearchChange}
-  />
+    <TaskSearch 
+      {i18n}
+      {searchText}
+      onSearchChange={handleSearchChange}
+    />
 
-  <TaskListContent 
-    {app}
-    {i18n}
-    {loading}
-    {error}
-    tasks={displayTasks()}
-    {displayMode}
-    onRefresh={refreshData}
-  />
+    <TaskListContent 
+      {app}
+      {i18n}
+      {loading}
+      {error}
+      tasks={displayTasks()}
+      {displayMode}
+      onRefresh={refreshData}
+    />
+  {/if}
 </div>
 
 <style>
@@ -190,5 +208,34 @@
     font-family: var(--b3-font-family);
     overflow-x: hidden;
     box-sizing: border-box;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2rem;
+  }
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--b3-border-color);
+    border-top: 3px solid var(--b3-theme-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  .loading-text {
+    color: var(--b3-theme-on-surface);
+    font-size: 0.9rem;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 </style> 

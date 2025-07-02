@@ -28,6 +28,18 @@
     "workspace": "Workspace"
   },
   "searchPlaceholder": "Search tasks...",
+  "priority": {
+    "urgent": "Urgent",
+    "high": "High",
+    "normal": "Normal",
+    "low": "Low",
+    "none": "No Priority",
+    "indicators": {
+      "urgent": "‼️ (type :!!)",
+      "high": "❗ (type :!)",
+      "low": "low"
+    }
+  },
   "setting": {
     "title": "Settings",
     "autoRefresh": "Auto refresh tasks",
@@ -43,7 +55,8 @@
     "sortOptions": {
       "created": "Created date",
       "updated": "Updated date",
-      "content": "Content"
+      "content": "Content",
+      "priority": "Priority"
     },
     "displayMode": "Task List Display Mode",
     "displayModeDesc": "How to display tasks in the list",

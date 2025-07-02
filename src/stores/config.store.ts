@@ -17,6 +17,7 @@ export interface PluginConfig {
   maxTasks: number;
   sortBy: string;
   displayMode: TaskDisplayMode;
+  loading: boolean;
 }
 
 function createConfigStore() {
@@ -27,12 +28,15 @@ function createConfigStore() {
     maxTasks: 2000,
     sortBy: "created",
     displayMode: TaskDisplayMode.ONLY_TASKS,
+    loading: true,
   });
 
   return {
     subscribe,
     set,
     update,
+    setLoading: (loading: boolean) =>
+      update((config) => ({ ...config, loading })),
     setAutoRefresh: (value: boolean) =>
       update((config) => ({ ...config, autoRefresh: value })),
     setRefreshInterval: (value: number) =>

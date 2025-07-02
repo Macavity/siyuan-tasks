@@ -28,6 +28,18 @@
     "workspace": "工作空间"
   },
   "searchPlaceholder": "搜索任务...",
+  "priority": {
+    "urgent": "紧急",
+    "high": "高",
+    "normal": "普通",
+    "low": "低",
+    "none": "无优先级",
+    "indicators": {
+      "urgent": "‼️ (输入 :!!)",
+      "high": "❗ (输入 :!)",
+      "low": "low"
+    }
+  },
   "setting": {
     "title": "设置",
     "autoRefresh": "自动刷新任务",
@@ -43,7 +55,8 @@
     "sortOptions": {
       "created": "创建日期",
       "updated": "更新日期",
-      "content": "内容"
+      "content": "内容",
+      "priority": "优先级"
     },
     "displayMode": "任务列表显示模式",
     "displayModeDesc": "任务列表的显示方式",

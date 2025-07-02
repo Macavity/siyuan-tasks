@@ -10,6 +10,13 @@ export enum TaskStatus {
   DONE = "done",
 }
 
+export enum TaskPriority {
+  NORMAL = "normal",
+  LOW = "low",
+  HIGH = "high",
+  URGENT = "urgent",
+}
+
 export enum TaskDisplayMode {
   ONLY_TASKS = "only_tasks",
   NOTEBOOK_DOCUMENT_TASKS = "notebook_document_tasks",
