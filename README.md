@@ -45,6 +45,35 @@ Tasks can be sorted by different criteria through the plugin settings:
 
 The sorting preference is saved and applied automatically to all task views.
 
+## Development
+
+This project uses [pnpm](https://pnpm.io/) as the package manager.
+
+### Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development mode
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+### Available Scripts
+
+- `pnpm dev` - Start development mode with hot reload
+- `pnpm build` - Build for production
+- `pnpm test` - Run tests
+- `pnpm check` - Run TypeScript and Svelte checks
+- `pnpm lint` - Run ESLint
+- `pnpm validate` - Run all checks (TypeScript, Svelte, ESLint)
+
 ## Future Ideas
 
 - Mark tasks as complete/incomplete from the panel.
