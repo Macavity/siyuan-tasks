@@ -1,74 +1,19 @@
 import { writable } from "svelte/store";
-import { lsNotebooks, getHPathByID, sql } from "../api";
+import { lsNotebooks, getHPathByID } from "../api";
 import {
   TaskRange,
   TaskStatus,
   TaskDisplayMode,
   TaskPriority,
+  TaskItem,
+  DocInfo,
+  BoxInfo,
+  Notebook,
+  TaskState,
+  GroupedTasks,
 } from "../types/tasks";
 import { TaskAnalysisService } from "../services/task-analysis.service";
-
-export interface TaskItem {
-  id: string;
-  /** the raw markdown content */
-  markdown: string;
-  /** content without markdown */
-  content: string;
-  /** Trimmed content */
-  fcontent: string;
-  box: string;
-  boxName: string;
-  root_id: string;
-  path: string;
-  created: string;
-  updated: string;
-  type: string;
-  subtype: string;
-  status: TaskStatus.TODO | TaskStatus.DONE;
-  priority: TaskPriority;
-  docPath?: string;
-}
-
-export interface DocInfo {
-  id: string;
-  rootID: string;
-  name: string;
-}
-
-export interface BoxInfo {
-  box: string;
-  name: string;
-}
-
-export interface Notebook {
-  id: string;
-  name: string;
-  closed?: boolean;
-  [key: string]: unknown;
-}
-
-export interface TaskState {
-  tasks: TaskItem[];
-  loading: boolean;
-  error: string;
-  currentDocInfo: DocInfo;
-  currentBoxInfo: BoxInfo;
-  notebooksCache: Notebook[];
-  currentRange: TaskRange;
-  currentStatus: TaskStatus;
-}
-
-export interface GroupedTasks {
-  [boxId: string]: {
-    notebook: string;
-    documents: {
-      [docId: string]: {
-        docPath: string;
-        tasks: TaskItem[];
-      };
-    };
-  };
-}
+import { fetchTasksFromDB } from "../services/task-query.service";
 
 function createTaskStore() {
   const initialState: TaskState = {
@@ -109,53 +54,27 @@ function createTaskStore() {
     async fetchTasks(range: TaskRange, status: TaskStatus) {
       update((state) => ({ ...state, loading: true, error: "" }));
       try {
-        let sqlQuery =
-          "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
+        const rawTasks = await fetchTasksFromDB(
+          range,
+          status,
+          () => this.getCurrentDocInfo(),
+          () => this.getCurrentBoxInfo()
+        );
 
-        if (range === TaskRange.DOC && this.getCurrentDocInfo()?.rootID) {
-          sqlQuery += ` AND root_id = '${this.getCurrentDocInfo().rootID}'`;
-        } else if (range === TaskRange.BOX && this.getCurrentBoxInfo()?.box) {
-          sqlQuery += ` AND box = '${this.getCurrentBoxInfo().box}'`;
-        }
-
-        sqlQuery += " ORDER BY created ASC LIMIT 2000";
-
-        const tasksResult = await sql(sqlQuery);
-        if (!tasksResult || tasksResult.length === 0) {
-          update((state) => ({ ...state, tasks: [], loading: false }));
-          return;
-        }
-
-        const filtered = tasksResult.filter((task) => {
-          if (status === TaskStatus.TODO)
-            return TaskAnalysisService.isTodo(task.markdown);
-          if (status === TaskStatus.DONE)
-            return TaskAnalysisService.isDone(task.markdown);
-          return (
-            TaskAnalysisService.isTodo(task.markdown) ||
-            TaskAnalysisService.isDone(task.markdown)
-          );
-        });
-
-        // Process tasks and add metadata
+        // Add notebook/doc path and status mapping
         const processedTasks: TaskItem[] = [];
-        for (const task of filtered) {
+        for (const task of rawTasks) {
           const notebookName = await this.getNotebookName(task.box);
           const docPath = await this.getDocumentHPath(task.root_id);
-          const taskStatus: TaskStatus = TaskAnalysisService.isTodo(
-            task.markdown
-          )
-            ? TaskStatus.TODO
-            : TaskAnalysisService.isDone(task.markdown)
-              ? TaskStatus.DONE
-              : TaskStatus.ALL;
-          const priority = TaskAnalysisService.detectPriority(task.fcontent);
+          const taskStatus: TaskStatus.TODO | TaskStatus.DONE =
+            TaskAnalysisService.isTodo(task.markdown)
+              ? TaskStatus.TODO
+              : TaskStatus.DONE;
           processedTasks.push({
             ...task,
             boxName: notebookName,
             docPath: docPath,
             status: taskStatus,
-            priority: priority,
           });
         }
 
@@ -327,52 +246,27 @@ function createTaskStore() {
       status: TaskStatus
     ): Promise<TaskItem[]> {
       try {
-        let sqlQuery =
-          "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
+        const rawTasks = await fetchTasksFromDB(
+          range,
+          status,
+          () => this.getCurrentDocInfo(),
+          () => this.getCurrentBoxInfo()
+        );
 
-        if (range === TaskRange.DOC && this.getCurrentDocInfo()?.rootID) {
-          sqlQuery += ` AND root_id = '${this.getCurrentDocInfo().rootID}'`;
-        } else if (range === TaskRange.BOX && this.getCurrentBoxInfo()?.box) {
-          sqlQuery += ` AND box = '${this.getCurrentBoxInfo().box}'`;
-        }
-
-        sqlQuery += " ORDER BY created ASC LIMIT 2000";
-
-        const tasksResult = await sql(sqlQuery);
-        if (!tasksResult || tasksResult.length === 0) {
-          return [];
-        }
-
-        const filtered = tasksResult.filter((task) => {
-          if (status === TaskStatus.TODO)
-            return TaskAnalysisService.isTodo(task.markdown);
-          if (status === TaskStatus.DONE)
-            return TaskAnalysisService.isDone(task.markdown);
-          return (
-            TaskAnalysisService.isTodo(task.markdown) ||
-            TaskAnalysisService.isDone(task.markdown)
-          );
-        });
-
-        // Process tasks and add metadata
+        // Add notebook/doc path and status mapping
         const processedTasks: TaskItem[] = [];
-        for (const task of filtered) {
+        for (const task of rawTasks) {
           const notebookName = await this.getNotebookName(task.box);
           const docPath = await this.getDocumentHPath(task.root_id);
-          const taskStatus: TaskStatus = TaskAnalysisService.isTodo(
-            task.markdown
-          )
-            ? TaskStatus.TODO
-            : TaskAnalysisService.isDone(task.markdown)
-              ? TaskStatus.DONE
-              : TaskStatus.ALL;
-          const priority = TaskAnalysisService.detectPriority(task.fcontent);
+          const taskStatus: TaskStatus.TODO | TaskStatus.DONE =
+            TaskAnalysisService.isTodo(task.markdown)
+              ? TaskStatus.TODO
+              : TaskStatus.DONE;
           processedTasks.push({
             ...task,
             boxName: notebookName,
             docPath: docPath,
             status: taskStatus,
-            priority: priority,
           });
         }
 
