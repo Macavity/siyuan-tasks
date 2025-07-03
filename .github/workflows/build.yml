@@ -49,14 +49,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Check Translations
-        run: pnpm check-i18n
+      - name: Svelte check and Lint
+        run: pnpm validate
 
       - name: Test
-        run: pnpm vitest run
+        run: pnpm test:run
 
       - name: Build for production
         run: pnpm build

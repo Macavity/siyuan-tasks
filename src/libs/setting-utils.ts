@@ -294,7 +294,7 @@ export class SettingUtils {
   createDefaultElement(item: ISettingUtilsItem) {
     let itemElement: HTMLElement;
     //阻止思源内置的回车键确认
-    const preventEnterConfirm = (e) => {
+    const preventEnterConfirm = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -304,7 +304,7 @@ export class SettingUtils {
       case "checkbox":
         const element: HTMLInputElement = document.createElement("input");
         element.type = "checkbox";
-        element.checked = item.value as boolean;
+        element.checked = Boolean(item.value);
         element.className = "b3-switch fn__flex-center";
         itemElement = element;
         element.onchange = item.action?.callback ?? (() => {});
@@ -321,7 +321,7 @@ export class SettingUtils {
           optionElement.text = text;
           selectElement.appendChild(optionElement);
         }
-        selectElement.value = item.value as string;
+        selectElement.value = String(item.value ?? "");
         selectElement.onchange = item.action?.callback ?? (() => {});
         itemElement = selectElement;
         break;
@@ -330,11 +330,11 @@ export class SettingUtils {
         sliderElement.type = "range";
         sliderElement.className =
           "b3-slider fn__size200 b3-tooltips b3-tooltips__n";
-        sliderElement.ariaLabel = item.value as string;
+        sliderElement.ariaLabel = String(item.value ?? "");
         sliderElement.min = item.slider?.min.toString() ?? "0";
         sliderElement.max = item.slider?.max.toString() ?? "100";
         sliderElement.step = item.slider?.step.toString() ?? "1";
-        sliderElement.value = item.value as string;
+        sliderElement.value = String(item.value ?? "");
         sliderElement.onchange = () => {
           sliderElement.ariaLabel = sliderElement.value;
           item.action?.callback();
@@ -346,7 +346,7 @@ export class SettingUtils {
           document.createElement("input");
         textInputElement.className =
           "b3-text-field fn__flex-center fn__size200";
-        textInputElement.value = item.value as string;
+        textInputElement.value = String(item.value ?? "");
         textInputElement.onchange = item.action?.callback ?? (() => {});
         itemElement = textInputElement;
         textInputElement.addEventListener("keydown", preventEnterConfirm);
@@ -355,7 +355,7 @@ export class SettingUtils {
         const textareaElement: HTMLTextAreaElement =
           document.createElement("textarea");
         textareaElement.className = "b3-text-field fn__block";
-        textareaElement.value = item.value as string;
+        textareaElement.value = String(item.value ?? "");
         textareaElement.onchange = item.action?.callback ?? (() => {});
         itemElement = textareaElement;
         break;
@@ -363,7 +363,7 @@ export class SettingUtils {
         const numberElement: HTMLInputElement = document.createElement("input");
         numberElement.type = "number";
         numberElement.className = "b3-text-field fn__flex-center fn__size200";
-        numberElement.value = item.value as string;
+        numberElement.value = String(item.value ?? "");
         itemElement = numberElement;
         numberElement.addEventListener("keydown", preventEnterConfirm);
         break;
@@ -399,14 +399,18 @@ export class SettingUtils {
   private updateValueFromElement(key: string) {
     const item = this.settings.get(key);
     if (item.type === "button") return;
-    const element = this.elements.get(key) as HTMLElement;
-    item.value = item.getEleVal(element);
+    const element = this.elements.get(key);
+    if (element && item.getEleVal) {
+      item.value = item.getEleVal(element);
+    }
   }
 
   private updateElementFromValue(key: string) {
     const item = this.settings.get(key);
     if (item.type === "button") return;
-    const element = this.elements.get(key) as HTMLElement;
-    item.setEleVal(element, item.value);
+    const element = this.elements.get(key);
+    if (element && item.setEleVal) {
+      item.setEleVal(element, item.value);
+    }
   }
 }
