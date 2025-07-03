@@ -11,8 +11,13 @@ import { type I18N } from "./types/i18n";
 import { TaskDisplayMode } from "./types/tasks";
 import { mount } from "svelte";
 import { SiyuanEvents } from "./types/siyuan-events";
-import { configStore, PluginSetting } from "./stores/config.store";
+import {
+  configStore,
+  PluginSetting,
+  MIN_REFRESH_INTERVAL,
+} from "./stores/config.store";
 import { Logger } from "./services/logger.service";
+import { get } from "svelte/store";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
@@ -25,6 +30,7 @@ export default class TaskListPlugin extends Plugin {
   customTab: () => Model;
   private settingUtils: SettingUtils;
   private taskDock: { config: IPluginDockTab; model: Dock };
+  private refreshTimer: NodeJS.Timeout | null = null;
 
   async onload() {
     this.addIcons(icons);
@@ -104,6 +110,43 @@ export default class TaskListPlugin extends Plugin {
       // Use the smart refresh function that only updates if needed
       taskStore.refreshTasksIfNeeded();
     });
+
+    // Subscribe to config changes to manage the refresh timer
+    configStore.subscribe((config) => {
+      this.handleConfigChange(config);
+    });
+  }
+
+  private handleConfigChange(config: any) {
+    if (config.loading) {
+      // Don't start timer while config is still loading
+      return;
+    }
+
+    if (config.autoRefresh) {
+      this.startRefreshTimer(config.refreshInterval);
+    } else {
+      this.stopRefreshTimer();
+    }
+  }
+
+  private startRefreshTimer(intervalSeconds: number) {
+    // Stop any existing timer first
+    this.stopRefreshTimer();
+
+    // Ensure minimum interval
+    const interval = Math.max(intervalSeconds, MIN_REFRESH_INTERVAL) * 1000;
+
+    this.refreshTimer = setInterval(() => {
+      taskStore.refreshTasksIfNeeded();
+    }, interval);
+  }
+
+  private stopRefreshTimer() {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
   }
 
   private initialiseSettings() {
@@ -131,6 +174,20 @@ export default class TaskListPlugin extends Plugin {
       type: "number",
       title: this.t.setting.refreshInterval,
       description: this.t.setting.refreshIntervalDesc,
+      action: {
+        callback: () => {
+          // Enforce minimum refresh interval when user changes the setting
+          const currentValue = this.settingUtils.get(
+            PluginSetting.RefreshInterval
+          ) as number;
+          if (currentValue < MIN_REFRESH_INTERVAL) {
+            this.settingUtils.set(
+              PluginSetting.RefreshInterval,
+              MIN_REFRESH_INTERVAL
+            );
+          }
+        },
+      },
     });
 
     this.settingUtils.addItem({
@@ -178,11 +235,27 @@ export default class TaskListPlugin extends Plugin {
   }
 
   private updateStoreFromSettingUtils() {
+    const rawRefreshInterval = this.settingUtils.get(
+      PluginSetting.RefreshInterval
+    ) as number;
+
+    // Enforce minimum refresh interval
+    const enforcedRefreshInterval = Math.max(
+      rawRefreshInterval,
+      MIN_REFRESH_INTERVAL
+    );
+
+    // If the setting was below minimum, update it in the settings
+    if (rawRefreshInterval < MIN_REFRESH_INTERVAL) {
+      this.settingUtils.set(
+        PluginSetting.RefreshInterval,
+        enforcedRefreshInterval
+      );
+    }
+
     const newConfig = {
       autoRefresh: this.settingUtils.get(PluginSetting.AutoRefresh) as boolean,
-      refreshInterval: this.settingUtils.get(
-        PluginSetting.RefreshInterval
-      ) as number,
+      refreshInterval: enforcedRefreshInterval,
       showCompleted: this.settingUtils.get(
         PluginSetting.ShowCompleted
       ) as boolean,
@@ -225,10 +298,14 @@ export default class TaskListPlugin extends Plugin {
     }
   }
 
-  async onunload() {}
+  async onunload() {
+    // Clean up the refresh timer when the plugin is unloaded
+    this.stopRefreshTimer();
+  }
 
   uninstall() {
-    // console.log("uninstall");
+    Logger.debug("uninstall");
+    this.stopRefreshTimer();
   }
 
   private get t(): I18N {

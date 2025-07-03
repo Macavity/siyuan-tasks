@@ -10,6 +10,9 @@ export enum PluginSetting {
   DisplayMode = "displayMode",
 }
 
+// Minimum refresh interval in seconds
+export const MIN_REFRESH_INTERVAL = 5;
+
 export interface PluginConfig {
   autoRefresh: boolean;
   refreshInterval: number;
@@ -40,7 +43,10 @@ function createConfigStore() {
     setAutoRefresh: (value: boolean) =>
       update((config) => ({ ...config, autoRefresh: value })),
     setRefreshInterval: (value: number) =>
-      update((config) => ({ ...config, refreshInterval: value })),
+      update((config) => ({
+        ...config,
+        refreshInterval: Math.max(value, MIN_REFRESH_INTERVAL),
+      })),
     setShowCompleted: (value: boolean) =>
       update((config) => ({ ...config, showCompleted: value })),
     setMaxTasks: (value: number) =>

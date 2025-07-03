@@ -39,7 +39,7 @@
     "autoRefresh": "自动刷新任务",
     "autoRefreshDesc": "切换文档时自动刷新任务",
     "refreshInterval": "刷新间隔（秒）",
-    "refreshIntervalDesc": "自动刷新任务的频率",
+    "refreshIntervalDesc": "自动刷新任务的频率。最小值为 5 秒。",
     "showCompleted": "显示已完成任务",
     "showCompletedDesc": "在任务列表中包含已完成的任务",
     "maxTasks": "最大任务显示数量",
