@@ -13,7 +13,7 @@ export interface RawSiyuanBlock {
   updated: string;
   type: string;
   subtype: string;
-  [key: string]: any; // Allow for additional properties
+  [key: string]: unknown; // Allow for additional properties
 }
 
 export class TaskFactory {

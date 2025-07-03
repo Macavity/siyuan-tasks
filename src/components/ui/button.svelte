@@ -10,7 +10,7 @@
         onClick: () => void;
     }
 
-    const { label, icon, isFocused, tooltip, onClick }: Props = $props();
+    const { label, icon, isFocused, tooltip, onClick } = $props() as Props;
 </script>
 
 <button

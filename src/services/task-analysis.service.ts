@@ -73,7 +73,7 @@ export class TaskAnalysisService {
    * Extract clean task text by removing priority indicators
    */
   static extractTaskText(taskText: string = ""): string {
-    taskText = taskText.replace(/[❗‼️]/g, "").trim();
+    taskText = taskText.replace(/[\u2757\u203c]|\ufe0f/g, "").trim();
 
     return taskText;
   }

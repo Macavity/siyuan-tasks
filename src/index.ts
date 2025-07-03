@@ -15,6 +15,7 @@ import {
   configStore,
   PluginSetting,
   MIN_REFRESH_INTERVAL,
+  type PluginConfig,
 } from "./stores/config.store";
 import { Logger } from "./services/logger.service";
 
@@ -34,7 +35,6 @@ export default class TaskListPlugin extends Plugin {
   async onload() {
     this.addIcons(icons);
     i18nStore.set(this.i18n as unknown as I18N);
-    this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
     this.addCommand({
       langKey: "showTaskList",
@@ -116,7 +116,7 @@ export default class TaskListPlugin extends Plugin {
     });
   }
 
-  private handleConfigChange(config: any) {
+  private handleConfigChange(config: PluginConfig) {
     if (config.loading) {
       // Don't start timer while config is still loading
       return;

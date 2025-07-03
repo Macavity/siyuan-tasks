@@ -3,6 +3,7 @@ import { TaskRange, TaskStatus, DocInfo, BoxInfo } from "../types/tasks";
 import { TaskAnalysisService } from "./task-analysis.service";
 import { RawSiyuanBlock } from "./task-factory.service";
 
+// TODO
 export async function fetchTasksFromDB(
   range: TaskRange,
   status: TaskStatus,
@@ -29,7 +30,7 @@ export async function fetchTasksFromDB(
 }
 
 export function filterTasksByStatus(
-  tasks: any[],
+  tasks: RawSiyuanBlock[],
   status: TaskStatus
 ): RawSiyuanBlock[] {
   return tasks.filter((task) => {

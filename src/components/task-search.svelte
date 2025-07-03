@@ -7,14 +7,14 @@
     onSearchChange: (value: string) => void;
   }
 
-  let { i18n, searchText, onSearchChange }: Props = $props();
+  let { i18n, searchText, onSearchChange } = $props() as Props;
 </script>
 
 <div class="search-wrap">
   <input 
     type="text" 
     value={searchText}
-    oninput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
+    oninput={(e: Event) => onSearchChange((e.currentTarget as HTMLInputElement).value)}
     placeholder={i18n.searchPlaceholder || 'Search tasks...'}
     class="search-input"
   />
