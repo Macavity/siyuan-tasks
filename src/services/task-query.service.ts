@@ -8,13 +8,14 @@ import {
   TaskPriority,
 } from "../types/tasks";
 import { TaskAnalysisService } from "./task-analysis.service";
+import { TaskFactory, RawSiyuanBlock } from "./task-factory.service";
 
 export async function fetchTasksFromDB(
   range: TaskRange,
   status: TaskStatus,
   getCurrentDocInfo: () => DocInfo,
   getCurrentBoxInfo: () => BoxInfo
-): Promise<TaskItem[]> {
+): Promise<RawSiyuanBlock[]> {
   let sqlQuery = "SELECT * FROM blocks WHERE type = 'i' AND subtype = 't'";
 
   if (range === TaskRange.DOC && getCurrentDocInfo()?.rootID) {
@@ -31,16 +32,13 @@ export async function fetchTasksFromDB(
   }
 
   // Filter by status
-  const filtered = filterTasksByStatus(tasksResult, status);
-
-  // Map to TaskItem[] (add priority detection here, but leave notebook/doc path to the store)
-  return filtered.map((task: any) => ({
-    ...task,
-    priority: TaskAnalysisService.detectPriority(task.fcontent),
-  }));
+  return filterTasksByStatus(tasksResult, status);
 }
 
-export function filterTasksByStatus(tasks: any[], status: TaskStatus): any[] {
+export function filterTasksByStatus(
+  tasks: any[],
+  status: TaskStatus
+): RawSiyuanBlock[] {
   return tasks.filter((task) => {
     if (status === TaskStatus.TODO)
       return TaskAnalysisService.isTodo(task.markdown);

@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "type": "module",
   "description": "SiYuan plugin to display all tasks in a panel.",
-  "repository": "https://github.com/Macavity/sy-tasks",
-  "homepage": "https://github.com/Macavity/sy-tasks",
+  "repository": "https://github.com/Macavity/siyuan-tasks",
+  "homepage": "https://github.com/Macavity/siyuan-tasks",
   "author": "Macavity",
   "license": "MIT",
   "scripts": {

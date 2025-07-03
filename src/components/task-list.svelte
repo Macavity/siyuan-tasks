@@ -2,7 +2,8 @@
   import { onMount } from 'svelte';
   import { type App } from 'siyuan';
   import { type I18N } from '../types/i18n';
-  import { taskStore, type TaskItem } from '../stores/task.store';
+  import { taskStore } from '../stores/task.store';
+  import { type TaskItem } from '../types/tasks';
   import { TaskRange, TaskStatus, TaskDisplayMode } from '../types/tasks';
   import { filterStateService, type FilterState } from '../libs/filter-state.service';
   import TaskHeader from './task-header.svelte';
@@ -93,7 +94,7 @@
   function handleRangeChange(range: TaskRange) {
     currentRange = range;
     taskStore.setCurrentRange(range);
-    taskStore.fetchTasks(currentRange, TaskStatus.ALL);
+    taskStore.refreshTasksIfNeeded(false, range, TaskStatus.ALL);
     saveFilterState();
   }
 

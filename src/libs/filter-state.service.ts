@@ -7,7 +7,7 @@ export interface FilterState {
   timestamp: number;
 }
 
-const STORAGE_KEY = "sy-tasks-filter-state";
+const STORAGE_KEY = "siyuan-tasks-filter-state";
 
 export class FilterStateService {
   private static instance: FilterStateService;
