@@ -1,7 +1,8 @@
 <script lang="ts">
   import { type App } from 'siyuan';
   import { type I18N } from '../types/i18n';
-  import { type TaskItem, type GroupedTasks, taskStore } from '../stores/task.store';
+  import { taskStore } from '../stores/task.store';
+  import { type TaskItem, type GroupedTasks } from '../types/tasks';
   import { TaskDisplayMode } from '../types/tasks';
   import TaskItemComponent from './task-item.svelte';
 

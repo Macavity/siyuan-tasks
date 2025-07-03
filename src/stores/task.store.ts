@@ -2,13 +2,11 @@ import { writable } from "svelte/store";
 import {
   TaskRange,
   TaskStatus,
-  TaskDisplayMode,
   TaskItem,
   DocInfo,
   BoxInfo,
   Notebook,
   TaskState,
-  GroupedTasks,
 } from "../types/tasks";
 import { fetchTasksFromDB } from "../services/task-query.service";
 import { TaskFactory } from "../services/task-factory.service";

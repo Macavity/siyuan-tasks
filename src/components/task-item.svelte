@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type App, openTab } from 'siyuan';
-  import { type TaskItem } from '../stores/task.store';
+  import { type TaskItem } from '../types/tasks';
   import { TaskStatus, TaskPriority } from '../types/tasks';
   import { TaskAnalysisService } from '../services/task-analysis.service';
 

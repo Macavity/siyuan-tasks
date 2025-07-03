@@ -1,4 +1,4 @@
-import { TaskItem, TaskStatus, TaskPriority } from "../types/tasks";
+import { TaskItem, TaskStatus } from "../types/tasks";
 import { TaskAnalysisService } from "./task-analysis.service";
 
 export interface RawSiyuanBlock {

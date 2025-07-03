@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { taskStore, type TaskItem } from "../stores/task.store";
-import { TaskStatus, TaskPriority, TaskRange } from "../types/tasks";
+import { taskStore } from "../stores/task.store";
+import { type TaskItem } from "../types/tasks";
+import { TaskStatus, TaskPriority } from "../types/tasks";
 import { configStore } from "../stores/config.store";
 import { get } from "svelte/store";
 

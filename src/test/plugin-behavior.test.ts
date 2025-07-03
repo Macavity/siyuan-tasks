@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { configStore } from "../stores/config.store";
-import { taskStore, type TaskItem } from "../stores/task.store";
+import { taskStore } from "../stores/task.store";
+import { type TaskItem } from "../types/tasks";
 import { TaskStatus, TaskPriority } from "../types/tasks";
 import { get } from "svelte/store";
 
@@ -28,6 +29,7 @@ describe("Plugin Behavior on Page Reload", () => {
       id: "1",
       markdown: "- [ ] ❗ High priority task",
       content: "- [ ] ❗ High priority task",
+      fcontent: "❗ High priority task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",
@@ -43,6 +45,7 @@ describe("Plugin Behavior on Page Reload", () => {
       id: "2",
       markdown: "- [x] Completed task",
       content: "- [x] Completed task",
+      fcontent: "Completed task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",
@@ -58,6 +61,7 @@ describe("Plugin Behavior on Page Reload", () => {
       id: "3",
       markdown: "- [ ] ‼️ Urgent task",
       content: "- [ ] ‼️ Urgent task",
+      fcontent: "‼️ Urgent task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",

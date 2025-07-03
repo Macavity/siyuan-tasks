@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { configStore, MIN_REFRESH_INTERVAL } from "../stores/config.store";
 import { TaskDisplayMode } from "../types/tasks";
 import { get } from "svelte/store";

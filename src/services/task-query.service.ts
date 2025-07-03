@@ -1,14 +1,7 @@
 import { sql } from "../api";
-import {
-  TaskRange,
-  TaskStatus,
-  TaskItem,
-  DocInfo,
-  BoxInfo,
-  TaskPriority,
-} from "../types/tasks";
+import { TaskRange, TaskStatus, DocInfo, BoxInfo } from "../types/tasks";
 import { TaskAnalysisService } from "./task-analysis.service";
-import { TaskFactory, RawSiyuanBlock } from "./task-factory.service";
+import { RawSiyuanBlock } from "./task-factory.service";
 
 export async function fetchTasksFromDB(
   range: TaskRange,

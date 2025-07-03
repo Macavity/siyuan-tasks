@@ -17,7 +17,6 @@ import {
   MIN_REFRESH_INTERVAL,
 } from "./stores/config.store";
 import { Logger } from "./services/logger.service";
-import { get } from "svelte/store";
 
 const STORAGE_NAME = "plugin-tasks";
 const TASK_DOCK_TYPE = "task-list-panel-dock";
