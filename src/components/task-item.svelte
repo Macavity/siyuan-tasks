@@ -84,7 +84,7 @@
   .task-item {
     display: flex;
     align-items: flex-start;
-    padding: 8px 12px;
+    padding: 0 2px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s ease;
