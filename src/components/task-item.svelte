@@ -26,9 +26,6 @@
 
   function getTaskText(): string {
     let taskText = TaskAnalysisService.extractTaskText(task.fcontent || '');
-    if (taskText.length > 100) {
-      taskText = taskText.substring(0, 100) + '...';
-    }
     if (!taskText) {
       taskText = 'Untitled Task (click to view)';
     }

@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { taskStore, type TaskItem } from "../stores/task.store";
-import { TaskStatus, TaskPriority } from "../types/tasks";
+import { TaskStatus, TaskPriority, TaskRange } from "../types/tasks";
 import { configStore } from "../stores/config.store";
 import { get } from "svelte/store";
-import { TaskRange } from "../types/tasks";
 
 // Mock the API functions
 vi.mock("../api", () => ({
@@ -18,6 +17,7 @@ describe("Task Filtering and Sorting", () => {
       id: "1",
       markdown: "- [ ] ❗ High priority task",
       content: "- [ ] ❗ High priority task",
+      fcontent: "- [ ] ❗ High priority task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",
@@ -33,6 +33,7 @@ describe("Task Filtering and Sorting", () => {
       id: "2",
       markdown: "- [x] Completed task",
       content: "- [x] Completed task",
+      fcontent: "- [x] Completed task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",
@@ -48,6 +49,7 @@ describe("Task Filtering and Sorting", () => {
       id: "3",
       markdown: "- [ ] ‼️ Urgent task",
       content: "- [ ] ‼️ Urgent task",
+      fcontent: "- [ ] ‼️ Urgent task",
       box: "box1",
       boxName: "Notebook 1",
       root_id: "doc1",
@@ -75,62 +77,75 @@ describe("Task Filtering and Sorting", () => {
     });
   });
 
-  it("should filter out completed tasks when showCompleted is false", () => {
-    // Set up tasks
+  it("should filter tasks by completion status", () => {
     taskStore.setTasks(mockTasks);
 
-    // Set showCompleted to false
-    configStore.setShowCompleted(false);
+    const config = get(configStore);
+    const tasks = get(taskStore).tasks;
 
-    // Get filtered tasks (this would normally be done in the component)
-    const tasks = get(taskStore);
-    const filteredTasks = tasks.tasks.filter((task) => {
+    // Test with showCompleted: true
+    const allTasks = tasks.filter((task) => {
+      if (!config.showCompleted && task.status === TaskStatus.DONE) {
+        return false;
+      }
+      return true;
+    });
+
+    expect(allTasks).toHaveLength(3);
+
+    // Test with showCompleted: false
+    configStore.set({ ...config, showCompleted: false });
+    const incompleteTasks = tasks.filter((task) => {
       if (!get(configStore).showCompleted && task.status === TaskStatus.DONE) {
         return false;
       }
       return true;
     });
 
-    expect(filteredTasks).toHaveLength(2);
-    expect(filteredTasks.every((task) => task.status === TaskStatus.TODO)).toBe(
-      true
-    );
+    expect(incompleteTasks).toHaveLength(2);
+    expect(
+      incompleteTasks.every((task) => task.status === TaskStatus.TODO)
+    ).toBe(true);
   });
 
-  it("should sort tasks by priority when sortBy is priority", () => {
-    // Set up tasks
+  it("should sort tasks by priority correctly", () => {
     taskStore.setTasks(mockTasks);
+    const tasks = get(taskStore).tasks;
 
-    // Set sortBy to priority
-    configStore.setSortBy("priority");
-
-    // Sort tasks
-    const sortedTasks = taskStore.sortTasks(mockTasks, "priority");
+    const sortedTasks = taskStore.sortTasks(tasks, "priority");
 
     expect(sortedTasks[0].priority).toBe(TaskPriority.URGENT);
     expect(sortedTasks[1].priority).toBe(TaskPriority.HIGH);
     expect(sortedTasks[2].priority).toBe(TaskPriority.NORMAL);
   });
 
-  it("should show completed tasks when showCompleted is true", () => {
-    // Set up tasks
-    taskStore.setTasks(mockTasks);
+  it("should correctly detect priority from fcontent instead of markdown", () => {
+    // Test case: task with no priority but sub-blocks with priority
+    const taskWithSubBlocks = {
+      id: "4",
+      markdown:
+        "- [ ] Regular task\n  - [ ] ❗ Sub-task with high priority\n  - [ ] Another sub-task",
+      content:
+        "- [ ] Regular task\n  - [ ] ❗ Sub-task with high priority\n  - [ ] Another sub-task",
+      fcontent: "- [ ] Regular task", // fcontent only contains the main task content
+      box: "box1",
+      boxName: "Notebook 1",
+      root_id: "doc1",
+      path: "/path1",
+      created: "2024-01-04T00:00:00Z",
+      updated: "2024-01-04T00:00:00Z",
+      type: "i",
+      subtype: "t",
+      status: TaskStatus.TODO as TaskStatus.TODO,
+      priority: TaskPriority.NORMAL, // Should be NORMAL, not HIGH
+    };
 
-    // Set showCompleted to true
-    configStore.setShowCompleted(true);
+    taskStore.setTasks([taskWithSubBlocks]);
+    const tasks = get(taskStore).tasks;
 
-    // Get filtered tasks
-    const tasks = get(taskStore);
-    const filteredTasks = tasks.tasks.filter((task) => {
-      if (!get(configStore).showCompleted && task.status === TaskStatus.DONE) {
-        return false;
-      }
-      return true;
-    });
-
-    expect(filteredTasks).toHaveLength(3);
-    expect(filteredTasks.some((task) => task.status === TaskStatus.DONE)).toBe(
-      true
-    );
+    // Verify that the task has normal priority, not high priority from sub-blocks
+    expect(tasks[0].priority).toBe(TaskPriority.NORMAL);
+    expect(tasks[0].fcontent).toBe("- [ ] Regular task");
+    expect(tasks[0].markdown).toContain("❗ Sub-task with high priority"); // markdown contains sub-blocks
   });
 });

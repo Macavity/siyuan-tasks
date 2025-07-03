@@ -62,7 +62,7 @@
   // Computed
   let filteredTasks = $derived(tasks.filter(task => {
     // Filter by search text
-    if (searchText && !task.markdown.toLowerCase().includes(searchText.toLowerCase())) {
+    if (searchText && !task.fcontent.toLowerCase().includes(searchText.toLowerCase())) {
       return false;
     }
     

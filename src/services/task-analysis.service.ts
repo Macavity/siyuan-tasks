@@ -46,23 +46,23 @@ export class TaskAnalysisService {
   }
 
   /**
-   * Detect priority from markdown using SiYuan emoji indicators
+   * Detect priority from fcontent using SiYuan emoji indicators
    */
-  static detectPriority(markdown: string): TaskPriority {
-    const lowerMarkdown = markdown.toLowerCase();
+  static detectPriority(content: string): TaskPriority {
+    const lowercaseContent = content.toLowerCase();
 
     // Urgent priority: ‼️ (double exclamation)
-    if (markdown.includes("‼️")) {
+    if (lowercaseContent.includes("‼️")) {
       return TaskPriority.URGENT;
     }
 
     // High priority: ❗ (single exclamation)
-    if (markdown.includes("❗")) {
+    if (lowercaseContent.includes("❗")) {
       return TaskPriority.HIGH;
     }
 
     // Low priority: "low"
-    if (lowerMarkdown.includes("low")) {
+    if (lowercaseContent.includes("low")) {
       return TaskPriority.LOW;
     }
 
@@ -73,8 +73,7 @@ export class TaskAnalysisService {
    * Extract clean task text by removing priority indicators
    */
   static extractTaskText(taskText: string = ""): string {
-    taskText = taskText.replace(/[❗‼️]/g, "").trim(); // Remove emoji indicators
-    taskText = taskText.replace(/\blow\b/gi, "").trim(); // Remove "low" word
+    taskText = taskText.replace(/[❗‼️]/g, "").trim();
 
     return taskText;
   }

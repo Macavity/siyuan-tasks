@@ -149,7 +149,7 @@ function createTaskStore() {
             : TaskAnalysisService.isDone(task.markdown)
               ? TaskStatus.DONE
               : TaskStatus.ALL;
-          const priority = TaskAnalysisService.detectPriority(task.markdown);
+          const priority = TaskAnalysisService.detectPriority(task.fcontent);
           processedTasks.push({
             ...task,
             boxName: notebookName,
@@ -366,7 +366,7 @@ function createTaskStore() {
             : TaskAnalysisService.isDone(task.markdown)
               ? TaskStatus.DONE
               : TaskStatus.ALL;
-          const priority = TaskAnalysisService.detectPriority(task.markdown);
+          const priority = TaskAnalysisService.detectPriority(task.fcontent);
           processedTasks.push({
             ...task,
             boxName: notebookName,
