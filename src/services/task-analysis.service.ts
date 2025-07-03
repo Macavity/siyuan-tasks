@@ -70,15 +70,9 @@ export class TaskAnalysisService {
   }
 
   /**
-   * Extract clean task text by removing markdown prefixes and priority indicators
+   * Extract clean task text by removing priority indicators
    */
-  static extractTaskText(markdown: string): string {
-    let taskText = markdown || "";
-
-    // Remove task prefix (e.g., '- [ ]', '- [x]', '- [X]', '* [ ]', etc.)
-    taskText = taskText.replace(/^\s*[-*]\s*\[[ xX]\]\s*/, "").trim();
-
-    // Remove priority indicators
+  static extractTaskText(taskText: string = ""): string {
     taskText = taskText.replace(/[❗‼️]/g, "").trim(); // Remove emoji indicators
     taskText = taskText.replace(/\blow\b/gi, "").trim(); // Remove "low" word
 

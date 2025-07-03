@@ -48,11 +48,6 @@
   const configShowCompleted = $derived($configStore.showCompleted);
   const configSortBy = $derived($configStore.sortBy);
 
-  // Debug logging
-  $effect(() => {
-    console.log("Config changed - showCompleted:", configShowCompleted, "sortBy:", configSortBy);
-  });
-
   // Combined loading state
   let isInitializing = $derived(configLoading);
 
@@ -84,7 +79,6 @@
     
     // Filter out completed tasks if showCompleted is false
     if (!configShowCompleted && task.status === TaskStatus.DONE) {
-      console.log("Filtering out completed task:", task.markdown);
       return false;
     }
     
@@ -93,21 +87,13 @@
 
   // Sort filtered tasks
   let sortedTasks = $derived(() => {
-    console.log("Sorting tasks by:", configSortBy, "Filtered count:", filteredTasks.length);
     return taskStore.sortTasks(filteredTasks, configSortBy);
   });
 
   // Get tasks in the appropriate display mode
   let displayTasks = $derived(() => {
     const tasks = taskStore.getTasksForDisplayMode(sortedTasks(), displayMode);
-    console.log("Display tasks:", tasks);
     return tasks;
-  });
-
-  let taskCounts = $derived({
-    doc: tasks.filter(t => t.root_id === currentDocInfo.rootID).length,
-    box: tasks.filter(t => t.box === currentBoxInfo.box).length,
-    workspace: tasks.length
   });
 
   // Methods
@@ -178,7 +164,6 @@
     <RangeTabs 
       {i18n}
       {currentRange}
-      {taskCounts}
       onRangeChange={handleRangeChange}
     />
 

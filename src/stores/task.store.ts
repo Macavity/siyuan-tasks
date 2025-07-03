@@ -10,8 +10,12 @@ import { TaskAnalysisService } from "../services/task-analysis.service";
 
 export interface TaskItem {
   id: string;
+  /** the raw markdown content */
   markdown: string;
+  /** content without markdown */
   content: string;
+  /** Trimmed content */
+  fcontent: string;
   box: string;
   boxName: string;
   root_id: string;

@@ -3,6 +3,7 @@ import { taskStore, type TaskItem } from "../stores/task.store";
 import { TaskStatus, TaskPriority } from "../types/tasks";
 import { configStore } from "../stores/config.store";
 import { get } from "svelte/store";
+import { TaskRange } from "../types/tasks";
 
 // Mock the API functions
 vi.mock("../api", () => ({
@@ -70,6 +71,7 @@ describe("Task Filtering and Sorting", () => {
       maxTasks: 100,
       sortBy: "created",
       displayMode: "only_tasks" as any,
+      loading: false,
     });
   });
 

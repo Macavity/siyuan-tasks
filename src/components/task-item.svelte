@@ -25,7 +25,7 @@
   }
 
   function getTaskText(): string {
-    let taskText = TaskAnalysisService.extractTaskText(task.markdown || task.content || '');
+    let taskText = TaskAnalysisService.extractTaskText(task.fcontent || '');
     if (taskText.length > 100) {
       taskText = taskText.substring(0, 100) + '...';
     }
@@ -104,7 +104,8 @@
 
   .task-checkbox {
     margin-right: 8px;
-    margin-top: 2px;
+    margin-top: 0;
+    align-self: flex-start;
   }
 
   .task-content {
@@ -118,12 +119,13 @@
     margin-bottom: 4px;
     word-break: break-word;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 6px;
   }
 
   .priority-icon {
     flex-shrink: 0;
+    margin-top: 0.1875rem;
   }
 
   .task-meta {

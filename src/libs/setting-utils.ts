@@ -8,6 +8,7 @@
  * @Description  :
  */
 
+import { Logger } from "@/services/logger.service";
 import { Plugin, Setting } from "siyuan";
 
 /**
@@ -120,7 +121,7 @@ export class SettingUtils {
 
   async load() {
     const data = await this.plugin.loadData(this.file);
-    console.debug("Load config:", data);
+    Logger.debug("Load config:", data);
     if (data) {
       for (const [key, item] of this.settings) {
         item.value = data?.[key] ?? item.value;
@@ -133,7 +134,6 @@ export class SettingUtils {
   async save(data?: unknown) {
     data = data ?? this.dump();
     await this.plugin.saveData(this.file, this.dump());
-    console.debug("Save config:", data);
     return data;
   }
 

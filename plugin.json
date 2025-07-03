@@ -1,7 +1,7 @@
 {
-  "name": "sy-tasks",
-  "author": "frostime",
-  "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
+  "name": "siyuan-tasks",
+  "author": "Macavity",
+  "url": "https://github.com/Macavity/sy-tasks",
   "version": "0.1.0",
   "minAppVersion": "3.0.0",
   "backends": [

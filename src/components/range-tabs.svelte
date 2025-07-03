@@ -5,11 +5,10 @@
   interface Props {
     i18n: I18N;
     currentRange: TaskRange;
-    taskCounts: { doc: number; box: number; workspace: number };
     onRangeChange: (range: TaskRange) => void;
   }
 
-  let { i18n, currentRange, taskCounts, onRangeChange }: Props = $props();
+  let { i18n, currentRange, onRangeChange }: Props = $props();
 </script>
 
 <div class="range-tabs">
@@ -17,19 +16,19 @@
     class="tab-btn {currentRange === TaskRange.DOC ? 'active' : ''}" 
     onclick={() => onRangeChange(TaskRange.DOC)}
   >
-    {i18n.range?.doc || 'Document'} ({taskCounts.doc})
+    {i18n.range?.doc || 'Document'}
   </button>
   <button 
     class="tab-btn {currentRange === TaskRange.BOX ? 'active' : ''}" 
     onclick={() => onRangeChange(TaskRange.BOX)}
   >
-    {i18n.range?.box || 'Notebook'} ({taskCounts.box})
+    {i18n.range?.box || 'Notebook'}
   </button>
   <button 
     class="tab-btn {currentRange === TaskRange.WORKSPACE ? 'active' : ''}" 
     onclick={() => onRangeChange(TaskRange.WORKSPACE)}
   >
-    {i18n.range?.workspace || 'Workspace'} ({taskCounts.workspace})
+    {i18n.range?.workspace || 'Workspace'}
   </button>
 </div>
 
