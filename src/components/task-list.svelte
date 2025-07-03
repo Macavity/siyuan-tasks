@@ -20,7 +20,6 @@
 
   // Local state for UI
   let currentRange = $state<TaskRange>(TaskRange.DOC);
-  let taskStatus = $state<TaskStatus>(TaskStatus.ALL);
   let searchText = $state('');
   let isExpanded = $state(true);
   let displayMode = $state<TaskDisplayMode>(TaskDisplayMode.ONLY_TASKS);
@@ -30,7 +29,6 @@
   let loading = $state(false);
   let error = $state('');
   let currentDocInfo = $state({ id: '', rootID: '', name: '' });
-  let currentBoxInfo = $state({ box: '', name: '' });
   let configLoading = $state(true);
 
   taskStore.subscribe(state => {
@@ -38,7 +36,6 @@
     loading = state.loading;
     error = state.error;
     currentDocInfo = state.currentDocInfo;
-    currentBoxInfo = state.currentBoxInfo;
   });
 
   configStore.subscribe(config => {
@@ -55,7 +52,7 @@
   function saveFilterState() {
     const state: FilterState = {
       range: currentRange,
-      status: taskStatus,
+      status: TaskStatus.ALL,
       displayMode: displayMode,
       timestamp: Date.now()
     };
@@ -67,14 +64,6 @@
     // Filter by search text
     if (searchText && !task.markdown.toLowerCase().includes(searchText.toLowerCase())) {
       return false;
-    }
-    
-    // Filter by task status
-    if (taskStatus === TaskStatus.TODO) {
-      return task.status === TaskStatus.TODO;
-    }
-    if (taskStatus === TaskStatus.DONE) {
-      return task.status === TaskStatus.DONE;
     }
     
     // Filter out completed tasks if showCompleted is false
@@ -97,16 +86,6 @@
   });
 
   // Methods
-  function toggleTaskStatus() {
-    const statusOrder = [TaskStatus.ALL, TaskStatus.TODO, TaskStatus.DONE];
-    const currentIndex = statusOrder.indexOf(taskStatus);
-    const nextIndex = (currentIndex + 1) % statusOrder.length;
-    taskStatus = statusOrder[nextIndex];
-    taskStore.setCurrentStatus(taskStatus);
-    taskStore.fetchTasks(currentRange, taskStatus);
-    saveFilterState();
-  }
-
   function refreshData() {
     taskStore.refreshTasksIfNeeded(true);
   }
@@ -114,7 +93,7 @@
   function handleRangeChange(range: TaskRange) {
     currentRange = range;
     taskStore.setCurrentRange(range);
-    taskStore.fetchTasks(currentRange, taskStatus);
+    taskStore.fetchTasks(currentRange, TaskStatus.ALL);
     saveFilterState();
   }
 
@@ -127,12 +106,11 @@
     // Load saved filter state
     const savedState = filterStateService.loadSavedFilter();
     currentRange = savedState.range;
-    taskStatus = savedState.status;
     displayMode = savedState.displayMode;
     
     // Sync the store's filter state
     taskStore.setCurrentRange(currentRange);
-    taskStore.setCurrentStatus(taskStatus);
+    taskStore.setCurrentStatus(TaskStatus.ALL);
     
     // If no document is open and no saved state, default to workspace filter
     if (!currentDocInfo.rootID && !filterStateService.hasSavedState()) {
@@ -154,9 +132,7 @@
   {:else}
     <TaskHeader 
       {i18n}
-      {taskStatus}
       {isExpanded}
-      onToggleStatus={toggleTaskStatus}
       onRefresh={refreshData}
       onToggleExpanded={() => isExpanded = !isExpanded}
     />

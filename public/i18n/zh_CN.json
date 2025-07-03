@@ -9,14 +9,8 @@
   "errorFetchingNotebookInfo": "获取任务所在笔记本信息时出错：",
   "errorFetchingDocumentPath": "获取任务所在文档路径时出错：",
   "pluginTitle": "任务列表",
-  "taskStatus": {
-    "all": "全部",
-    "todo": "待办",
-    "done": "已完成"
-  },
   "options": {
     "refresh": "刷新",
-    "switch": "切换状态",
     "search": "搜索",
     "filter": "筛选",
     "expand": "展开",

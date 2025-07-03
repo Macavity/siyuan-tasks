@@ -9,14 +9,8 @@
   "errorFetchingNotebookInfo": "Error fetching notebook info for task:",
   "errorFetchingDocumentPath": "Error fetching document path for task:",
   "pluginTitle": "Task List",
-  "taskStatus": {
-    "all": "All",
-    "todo": "Todo",
-    "done": "Done"
-  },
   "options": {
     "refresh": "Refresh",
-    "switch": "Switch Status",
     "search": "Search",
     "filter": "Filter",
     "expand": "Expand",

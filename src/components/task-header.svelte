@@ -1,25 +1,15 @@
 <script lang="ts">
   import { type I18N } from '../types/i18n';
-  import { TaskStatus } from '../types/tasks';
   import Button from './ui/button.svelte';
 
   interface Props {
     i18n: I18N;
-    taskStatus: TaskStatus;
     isExpanded: boolean;
-    onToggleStatus: () => void;
     onRefresh: () => void;
     onToggleExpanded: () => void;
   }
 
-  let { i18n, taskStatus, isExpanded, onToggleStatus, onRefresh, onToggleExpanded }: Props = $props();
-
-  // Task status mapping
-  const taskStatusMap = {
-    [TaskStatus.ALL]: i18n.taskStatus?.all || 'All',
-    [TaskStatus.TODO]: i18n.taskStatus?.todo || 'Todo',
-    [TaskStatus.DONE]: i18n.taskStatus?.done || 'Done'
-  };
+  let { i18n, isExpanded, onRefresh, onToggleExpanded }: Props = $props();
 </script>
 
 <div class="task-header">
@@ -30,14 +20,6 @@
           <use xlink:href="#tasksDockIcon"></use>
         </svg>
         {i18n.pluginTitle || 'Task List'}
-        <button 
-          class="task-status" 
-          onclick={onToggleStatus}
-          onkeydown={(e) => e.key === 'Enter' && onToggleStatus()}
-          aria-label="Toggle task status filter"
-        >
-          ({taskStatusMap[taskStatus]})
-        </button>
       </h3>
     </div>
     
@@ -45,8 +27,6 @@
       <Button icon="iconRefresh" onClick={onRefresh} tooltip={i18n.options?.refresh || 'Refresh'}/>
       
       <Button icon={isExpanded ? 'iconContract' : 'iconExpand'} onClick={onToggleExpanded} tooltip={isExpanded ? 'Collapse' : 'Expand'}/>
-      
-      <Button icon="iconSoftWrap" onClick={onToggleStatus} tooltip={i18n.options?.switch || 'Switch Status'}/>
     </div>
   </div>
 </div>
@@ -69,16 +49,6 @@
     font-weight: 600;
     display: flex;
     align-items: center;
-  }
-
-  .task-status {
-    margin-left: 8px;
-    color: var(--b3-theme-primary);
-    cursor: pointer;
-    font-size: 14px;
-    background: none;
-    border: none;
-    padding: 0;
   }
 
   .btn-list {
