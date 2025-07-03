@@ -7,7 +7,7 @@
     onSearchChange: (value: string) => void;
   }
 
-  let { i18n, searchText, onSearchChange } = $props() as Props;
+  let { i18n, searchText, onSearchChange }: Props = $props();
 </script>
 
 <div class="search-wrap">

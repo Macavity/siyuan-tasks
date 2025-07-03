@@ -9,7 +9,7 @@
     onToggleExpanded: () => void;
   }
 
-  let { i18n, isExpanded, onRefresh, onToggleExpanded } = $props() as Props;
+  let { i18n, isExpanded, onRefresh, onToggleExpanded }: Props = $props();
 </script>
 
 <div class="task-header">

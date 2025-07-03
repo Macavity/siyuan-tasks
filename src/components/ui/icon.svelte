@@ -8,7 +8,7 @@
     style?: string;
   }
 
-  let { class: klass, icon, style } = $props() as Props;
+  let { class: klass, icon, style }: Props = $props();
 </script>
 
 <svg class="{klass || ''}" style={style}>

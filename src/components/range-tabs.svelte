@@ -8,7 +8,7 @@
     onRangeChange: (range: TaskRange) => void;
   }
 
-  let { i18n, currentRange, onRangeChange } = $props() as Props;
+  let { i18n, currentRange, onRangeChange }: Props = $props();
 </script>
 
 <div class="range-tabs">

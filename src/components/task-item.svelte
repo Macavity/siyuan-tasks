@@ -10,7 +10,7 @@
     showMeta?: boolean;
   }
 
-  let { app, task, showMeta = true } = $props() as Props;
+  let { app, task, showMeta = true }: Props = $props();
 
   function handleTaskClick() {
     if (task.root_id) {
