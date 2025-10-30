@@ -76,7 +76,11 @@
         </div>
         <div class="tree-icon">
           {#await NotebookService.getNotebookIcon(boxId) then icon}
-            {icon}
+            {#if icon.kind === 'image'}
+              <img src={icon.src} alt="" />
+            {:else}
+              {icon.text}
+            {/if}
           {:catch}
             🗃
           {/await}
@@ -115,7 +119,11 @@
                   </div>
                   <div class="tree-icon">
                     {#await NotebookService.getDocumentIcon(docId) then icon}
-                      {icon}
+                      {#if icon.kind === 'image'}
+                        <img src={icon.src} alt="" />
+                      {:else}
+                        {icon.text}
+                      {/if}
                     {:catch}
                       📄
                     {/await}
@@ -184,6 +192,11 @@
     height: 16px;
     flex-shrink: 0;
     font-size: 14px;
+  }
+  .tree-icon img {
+    width: 16px;
+    height: 16px;
+    display: block;
   }
 
   .tree-label {

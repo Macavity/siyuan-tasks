@@ -22,7 +22,6 @@
     "collapse": "Collapse"
   },
   "wait": "Signal this task will be done later",
-  "getTab": "Get Tab",
   "range": {
     "doc": "Document",
     "box": "Notebook",

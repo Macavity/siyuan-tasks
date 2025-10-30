@@ -17,12 +17,13 @@ Inspired by task management in Obsidian. Displays a panel listing all tasks acro
 
 ## Changes in last release
 
-### [1.4.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.4.0)
+### [1.5.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.5.0)
 
-- Today's Tasks section at the top of the list
-- Drag a task onto the Today header to add it
-- Right-click any task to add/remove it from Today
-- Setting to show/hide Today
+- Fixed document icon display for nested documents with custom image icons
+- Fixed Unicode emoji parsing for variation selectors (e.g., "2600-fe0f")
+- Added support for custom emoji files (svg, png, jpg, gif, webp) in document icons
+- Improved icon caching to preserve both emoji and image icon types
+- Added German language support (de_DE)
 
 ## Demo
 

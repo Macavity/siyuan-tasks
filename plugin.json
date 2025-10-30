@@ -2,7 +2,7 @@
   "name": "siyuan-tasks",
   "author": "Macavity",
   "url": "https://github.com/Macavity/siyuan-tasks",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "minAppVersion": "2.10.13",
   "backends": [
     "all"
@@ -24,7 +24,8 @@
   },
   "i18n": [
     "en_US",
-    "zh_CN"
+    "zh_CN",
+    "de_DE"
   ],
   "funding": {
     "custom": [
