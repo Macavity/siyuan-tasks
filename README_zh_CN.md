@@ -16,12 +16,13 @@
 
 ## 最新版本更新
 
-### [1.4.1](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.4.1)
+### [1.5.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.5.0)
 
 - 修复了嵌套文档中自定义图片图标的显示问题
 - 修复了Unicode表情符号解析，支持变体选择器（如"2600-fe0f"）
 - 新增对自定义表情符号文件的支持（svg、png、jpg、gif、webp）
 - 改进了图标缓存，同时保留表情符号和图片图标类型
+- 新增德语（de_DE）语言支持
 
 ## 演示
 
