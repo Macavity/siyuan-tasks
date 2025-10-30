@@ -132,7 +132,7 @@ export class NotebookService {
       }
 
       // Split on hyphen or space to support sequences
-      const parts = normalized.split(/[\-\s]+/).filter(Boolean);
+      const parts = normalized.split(/[-\s]+/).filter(Boolean);
       const codePoints: number[] = [];
 
       for (const part of parts) {
