@@ -9,13 +9,8 @@ export class MigrationService {
 
   static async migrateSettings(plugin: Plugin): Promise<void> {
     try {
-      // Check if V2 settings file exists
-      // readDir returns entries in the directory
+      // readDir returns ReadDirEntry[] or throws on error
       const entries = await readDir(this.STORAGE_BASE_PATH);
-      
-      // If directory doesn't exist or error, entries might be null/undefined depending on implementation, 
-      // but readDir usually throws or returns empty array. 
-      // Based on task-metadata.service.ts, it returns ReadDirEntry[]
       
       if (!entries) {
           Logger.debug("Storage directory not found or empty.");
