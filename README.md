@@ -19,7 +19,7 @@ Inspired by task management in Obsidian. Displays a panel listing all tasks acro
 
 ### [1.6.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.6.0)
 
-- Added to save folded state of notebook groups
+- Added ability to save folded state of notebook groups
 
 ### [1.5.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.5.0)
 
