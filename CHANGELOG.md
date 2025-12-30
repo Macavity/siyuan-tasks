@@ -2,7 +2,7 @@
 
 ### [1.6.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.6.0)
 
-- ✨ Added to save folded state of notebook groups
+- ✨ Added ability to save folded state of notebook groups
 
 - 新增笔记本组折叠状态保存功能
 
