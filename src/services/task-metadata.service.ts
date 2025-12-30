@@ -142,4 +142,5 @@ export class TaskMetadataService {
     const todayTaskIds = await this.loadTodayTaskIds();
     return todayTaskIds.length;
   }
+
 }

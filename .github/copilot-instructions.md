@@ -1,6 +1,6 @@
 # SiYuan Tasks Plugin - Copilot Instructions
 
-You are an expert developer working on the `siyuan-tasks` plugin for SiYuan Note. This project uses **Svelte 5**, **TypeScript**, and **Vite**.
+You are an expert developer working on the `siyuan-tasks` plugin for SiYuan Note which provides task management features in a dedicated side panel. This project uses **Svelte 5**, **TypeScript**, and **Vite**.
 
 ## Project Architecture
 - **Entry Point**: `src/index.ts` (`TaskListPlugin` class). Handles lifecycle (`onload`, `onunload`), dock registration, and global commands.
@@ -14,6 +14,7 @@ You are an expert developer working on the `siyuan-tasks` plugin for SiYuan Note
 - **Styling**: SCSS (`src/index.scss`). Uses SiYuan's native CSS classes (e.g., `b3-list-item`, `fn__flex-center`) for consistency with the host app.
 
 ## Svelte 5 Conventions
+- Avoid disabling lint rules
 - **Runes**: Use Svelte 5 runes exclusively.
   - State: `let count = $state(0);`
   - Derived: `let double = $derived(count * 2);`
@@ -30,11 +31,8 @@ You are an expert developer working on the `siyuan-tasks` plugin for SiYuan Note
 - **Block IDs**: SiYuan uses 22-char IDs. Always preserve them.
 - **Attributes**: Task status is often stored in markdown (`- [ ]`, `- [x]`) or block attributes.
 
-## Development Workflow
-- **Build**: `pnpm build` (production) or `pnpm dev` (watch mode).
-- **Link**: `pnpm make-link` links the build output to SiYuan's `data/plugins` directory.
-- **Testing**: `pnpm test` runs Vitest.
-- **Linting**: `pnpm lint` and `pnpm check`.
+## API Usage, Endpoints
+- getFile returns 200 with {code:404} for not found
 
 ## Common Patterns
 - **I18n**: Use `i18nStore` or `plugin.i18n` for localized strings.

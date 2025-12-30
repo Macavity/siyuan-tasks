@@ -3,6 +3,8 @@
   import TaskItemComponent from './task-item.svelte';
   import { NotebookService } from '../services/notebook.service';
   import Chevron from '@/components/ui/chevron.svelte';
+  import { FolderStateService } from '@/services/folder-state.service';
+  import { onMount } from 'svelte';
 
   interface Props {
     groupedTasks: GroupedTasks;
@@ -11,51 +13,40 @@
 
   let { groupedTasks, displayMode }: Props = $props();
 
-  // State for expanded/collapsed items - expanded by default
-  let expandedNotebooks = $state<Set<string>>(new Set());
-  let expandedDocuments = $state<Set<string>>(new Set());
+  // State for folded items (persisted)
+  let foldedIds = $state<Set<string>>(new Set());
 
-  // Initialize expanded state when groupedTasks changes
-  $effect(() => {
-    // Expand all notebooks by default
-    const newExpandedNotebooks = new Set<string>();
-    const newExpandedDocuments = new Set<string>();
-    
-    for (const [boxId] of Object.entries(groupedTasks)) {
-      newExpandedNotebooks.add(boxId);
-    }
-    
-    // Expand all documents by default
-    for (const [, group] of Object.entries(groupedTasks)) {
-      for (const [docId] of Object.entries(group.documents)) {
-        newExpandedDocuments.add(docId);
-      }
-    }
-    
-    expandedNotebooks = newExpandedNotebooks;
-    expandedDocuments = newExpandedDocuments;
+  onMount(async () => {
+    const ids = await FolderStateService.loadFoldedDirs();
+    foldedIds = new Set(ids);
   });
 
   // Toggle notebook expansion
-  function toggleNotebook(boxId: string) {
-    const newSet = new Set(expandedNotebooks);
-    if (newSet.has(boxId)) {
-      newSet.delete(boxId);
+  async function toggleNotebook(boxId: string) {
+    const newSet = new Set(foldedIds);
+    const wasFolded = newSet.has(boxId);
+
+    if (wasFolded) {
+      newSet.delete(boxId); // Unfold
     } else {
-      newSet.add(boxId);
+      newSet.add(boxId); // Fold
     }
-    expandedNotebooks = newSet;
+    foldedIds = newSet;
+    await FolderStateService.setFolderExpanded(boxId, wasFolded);
   }
 
   // Toggle document expansion
-  function toggleDocument(docId: string) {
-    const newSet = new Set(expandedDocuments);
-    if (newSet.has(docId)) {
-      newSet.delete(docId);
+  async function toggleDocument(docId: string) {
+    const newSet = new Set(foldedIds);
+    const wasFolded = newSet.has(docId);
+
+    if (wasFolded) {
+      newSet.delete(docId); // Unfold
     } else {
-      newSet.add(docId);
+      newSet.add(docId); // Fold
     }
-    expandedDocuments = newSet;
+    foldedIds = newSet;
+    await FolderStateService.setFolderExpanded(docId, wasFolded);
   }
 </script>
 
@@ -64,15 +55,15 @@
     <div class="tree-node notebook-node">
       <div 
         class="tree-header notebook-header" 
-        class:expanded={expandedNotebooks.has(boxId)}
+        class:expanded={!foldedIds.has(boxId)}
         onclick={() => toggleNotebook(boxId)}
         onkeydown={(e) => e.key === 'Enter' && toggleNotebook(boxId)}
         tabindex="0"
         role="button"
-        aria-expanded={expandedNotebooks.has(boxId)}
+        aria-expanded={!foldedIds.has(boxId)}
       >
         <div class="tree-toggle">
-          <Chevron expanded={expandedNotebooks.has(boxId)} />
+          <Chevron expanded={!foldedIds.has(boxId)} />
         </div>
         <div class="tree-icon">
           {#await NotebookService.getNotebookIcon(boxId) then icon}
@@ -90,7 +81,7 @@
         </div>
       </div>
       
-      {#if expandedNotebooks.has(boxId)}
+      {#if !foldedIds.has(boxId)}
         <div class="tree-content">
           {#if displayMode === TaskDisplayMode.NOTEBOOK_TASKS}
             <!-- NOTEBOOK_TASKS: Show tasks directly under notebook -->
@@ -107,15 +98,15 @@
               <div class="tree-node document-node">
                 <div 
                   class="tree-header document-header" 
-                  class:expanded={expandedDocuments.has(docId)}
+                  class:expanded={!foldedIds.has(docId)}
                   onclick={() => toggleDocument(docId)}
                   onkeydown={(e) => e.key === 'Enter' && toggleDocument(docId)}
                   tabindex="0"
                   role="button"
-                  aria-expanded={expandedDocuments.has(docId)}
+                  aria-expanded={!foldedIds.has(docId)}
                 >
                   <div class="tree-toggle">
-                    <Chevron expanded={expandedDocuments.has(docId)} />
+                    <Chevron expanded={!foldedIds.has(docId)} />
                   </div>
                   <div class="tree-icon">
                     {#await NotebookService.getDocumentIcon(docId) then icon}
@@ -133,7 +124,7 @@
                   </div>
                 </div>
                 
-                {#if expandedDocuments.has(docId)}
+                {#if !foldedIds.has(docId)}
                   <div class="tree-content">
                     {#each docGroup.tasks as task (task.id)}
                       <div class="tree-task" style="padding-left: 1.6rem;">

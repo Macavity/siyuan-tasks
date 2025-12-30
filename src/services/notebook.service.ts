@@ -1,5 +1,5 @@
-import { lsNotebooks, getHPathByID, getDocInfo } from "../api";
-import { Notebook } from "../types/tasks";
+import { lsNotebooks, getHPathByID, getDocInfo } from "@/api";
+import { Notebook } from "@/types/tasks";
 import { Logger } from "./logger.service";
 
 export type IconRender =
@@ -105,11 +105,7 @@ export class NotebookService {
       );
       if (fileIconMatch) {
         const safeName = unicode.trim();
-        console.log(
-          "plugin:siyuan-tasks",
-          "fileIconMatch image",
-          `/emojis/${safeName}`
-        );
+        Logger.debug(`fileIconMatch image /emojis/${safeName}`);
         return { kind: "image", src: `/emojis/${safeName}` };
       }
 
