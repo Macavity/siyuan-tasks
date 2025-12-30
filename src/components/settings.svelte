@@ -5,7 +5,7 @@
     import { configStore } from "@/stores/config.store";
     import { Plugin } from "siyuan";
     import { TaskDisplayMode } from "@/types/tasks";
-    import { STORAGE_NAME } from "@/constants";
+    import { STORAGE_NAME_V2 } from "@/constants";
     import { Logger } from "@/services/logger.service";
     import { i18nStore } from "@/stores/i18n.store";
 
@@ -122,7 +122,7 @@
                 configStore.setSetting(key as PluginSetting, finalValue);
                 
                 // Save settings to storage using plugin's saveData method
-                await plugin.saveData(STORAGE_NAME, configStore.getSettingsObject());
+                await plugin.saveData(STORAGE_NAME_V2, configStore.getSettingsObject());
                 Logger.debug("Settings saved successfully");
             } catch (error) {
                 Logger.error("Failed to save settings:", error);

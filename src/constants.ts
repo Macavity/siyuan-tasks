@@ -1,6 +1,7 @@
 import { TaskDisplayMode } from "./types/tasks";
 
-export const STORAGE_NAME = "plugin-tasks";
+export const STORAGE_NAME_V2 = "plugin-tasks.json";
+export const STORAGE_NAME_V1 = "plugin-tasks";
 export const TASK_DOCK_TYPE = "task-list-panel-dock";
 
 export const DEFAULT_SETTINGS = {
