@@ -100,7 +100,7 @@
                   class="tree-header document-header" 
                   class:expanded={!foldedIds.has(docId)}
                   onclick={() => toggleDocument(docId)}
-                  onkeydown={(e) => e.key === 'Enter' && toggleDocument(docId)}
+                  onkeydown={async (e) => e.key === 'Enter' && await toggleDocument(docId)}
                   tabindex="0"
                   role="button"
                   aria-expanded={!foldedIds.has(docId)}
