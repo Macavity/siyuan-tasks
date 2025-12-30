@@ -16,6 +16,10 @@
 
 ## 最新版本更新
 
+### [1.6.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.6.0)
+
+- 新增笔记本组折叠状态保存功能
+
 ### [1.5.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.5.0)
 
 - 修复了嵌套文档中自定义图片图标的显示问题

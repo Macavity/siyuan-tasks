@@ -114,14 +114,14 @@ describe("Plugin Initialization", () => {
 
     // Simulate the onLayoutReady function
     const onLayoutReady = async () => {
-      mockPlugin.loadData("plugin-tasks");
+      mockPlugin.loadData("plugin-tasks.json");
       await mockSettingUtils.load();
       // updateStoreFromSettingUtils would be called here
     };
 
     await onLayoutReady();
 
-    expect(mockPlugin.loadData).toHaveBeenCalledWith("plugin-tasks");
+    expect(mockPlugin.loadData).toHaveBeenCalledWith("plugin-tasks.json");
     expect(mockSettingUtils.load).toHaveBeenCalled();
   });
 
@@ -155,7 +155,7 @@ describe("Plugin Initialization", () => {
 
     // Step 2: Simulate the BUGGY behavior (not awaiting)
     const simulateBuggyInitialization = () => {
-      mockPlugin.loadData("plugin-tasks");
+      mockPlugin.loadData("plugin-tasks.json");
       mockSettingUtilsWithBug.load(); // Not awaited!
 
       // Immediately try to read settings (before they're loaded)

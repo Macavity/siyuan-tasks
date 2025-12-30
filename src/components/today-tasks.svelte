@@ -7,20 +7,23 @@
   import { taskStore } from '@/stores/task.store';
   import { configStore } from '@/stores/config.store';
   import Chevron from '@/components/ui/chevron.svelte';
+  import { FolderStateService } from '@/services/folder-state.service';
 
   interface Props {
     tasks: TaskItem[];
     searchText?: string;
-    isExpanded?: boolean;
     onTaskUpdated?: () => void;
   }
 
-  let { tasks, searchText = '', isExpanded = true, onTaskUpdated }: Props = $props();
+  let { tasks, searchText = '', onTaskUpdated }: Props = $props();
 
   // Globals
   let i18n = $derived($i18nStore as I18N);
   let showCompleted = $derived($configStore.showCompleted);
   let sortBy = $derived($configStore.sortBy);
+
+  // State for expansion
+  let isExpanded = $state(true);
 
   // Filter tasks that are marked for today
   let todayTasks = $derived(() => {
@@ -50,7 +53,9 @@
   let dragStartHandler: (e: DragEvent) => void;
   let dragEndHandler: (e: DragEvent) => void;
 
-  onMount(() => {
+  onMount(async () => {
+    isExpanded = await FolderStateService.isTodayFolderExpanded();
+
     // Track when dragging starts globally
     dragStartHandler = () => {
       isDragging = true;
@@ -118,8 +123,9 @@
     }
   }
 
-  function toggleExpanded() {
+  async function toggleExpanded() {
     isExpanded = !isExpanded;
+    await FolderStateService.setTodayFolderExpanded(isExpanded);
   }
 </script>
 

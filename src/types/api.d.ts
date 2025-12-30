@@ -8,6 +8,12 @@ interface IReslsNotebooks {
     notebooks: Notebook[];
 }
 
+interface FileNotFound {
+    code: 404;
+    msg: string;
+    data: null;
+}
+
 interface IResUpload {
     errFiles: string[];
     succMap: { [key: string]: string };

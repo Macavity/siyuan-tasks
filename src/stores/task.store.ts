@@ -7,7 +7,7 @@ import {
   BoxInfo,
   Notebook,
   TaskState,
-} from "../types/tasks";
+} from "@/types/tasks";
 import { fetchTasksFromDB } from "../services/task-query.service";
 import { TaskFactory } from "../services/task-factory.service";
 import { TaskProcessingService } from "../services/task-processing.service";

@@ -26,7 +26,8 @@ import {
 import { Logger } from "./services/logger.service";
 import SettingsView from "@/views/settings-view.svelte";
 import { createFromObject } from "./types/dto/settings.dto";
-import { STORAGE_NAME, TASK_DOCK_TYPE } from "@/constants";
+import { STORAGE_NAME_V2, TASK_DOCK_TYPE } from "@/constants";
+import { MigrationService } from "./services/migration.service";
 
 type TEventSwitchProtyle = CustomEvent<
   IEventBusMap[SiyuanEvents.SWITCH_PROTYLE]
@@ -194,7 +195,11 @@ export default class TaskListPlugin extends Plugin {
     try {
       // Load settings using plugin's loadData method
       configStore.setLoading(true);
-      const settingsData = (await this.loadData(STORAGE_NAME)) as PluginConfig;
+
+      // Run migration if needed
+      await MigrationService.migrateSettings(this);
+
+      const settingsData = (await this.loadData(STORAGE_NAME_V2)) as PluginConfig;
 
       if (
         settingsData &&

@@ -1,5 +1,11 @@
 # Siyuan Tasks - Changelog
 
+### [1.6.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.6.0)
+
+- ✨ Added ability to save folded state of notebook groups
+
+- 新增笔记本组折叠状态保存功能
+
 ### [1.5.0](https://github.com/Macavity/siyuan-tasks/releases/tag/v1.5.0)
 
 - 🐛 Fixed document icon display for nested documents with custom image icons
