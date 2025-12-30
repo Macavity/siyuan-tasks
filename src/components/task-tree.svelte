@@ -57,7 +57,7 @@
         class="tree-header notebook-header" 
         class:expanded={!foldedIds.has(boxId)}
         onclick={() => toggleNotebook(boxId)}
-        onkeydown={(e) => e.key === 'Enter' && toggleNotebook(boxId)}
+        onkeydown={async (e) => e.key === 'Enter' && await toggleNotebook(boxId)}
         tabindex="0"
         role="button"
         aria-expanded={!foldedIds.has(boxId)}
